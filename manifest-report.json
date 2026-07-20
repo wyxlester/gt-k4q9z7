@@ -1,0 +1,1 @@
+{"name": "我的血糖", "short_name": "我的血糖", "start_url": "report.html", "display": "standalone", "background_color": "#f9f9f7", "theme_color": "#2a78d6", "icons": [{"src": "icon-report.png", "sizes": "192x192", "type": "image/png"}, {"src": "icon-report.png", "sizes": "512x512", "type": "image/png"}]}

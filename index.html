@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="robots" content="noindex, nofollow">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="记血糖">
+<link rel="apple-touch-icon" href="icon-log.png">
+<link rel="icon" type="image/png" href="icon-log.png">
+<link rel="manifest" href="manifest-log.json">
+<title>记血糖 · Log Glucose</title>
+<style>
+  :root {
+    color-scheme: light;
+    --surface-1: #fcfcfb;
+    --page: #f9f9f7;
+    --text-primary: #0b0b0b;
+    --text-secondary: #52514e;
+    --text-muted: #898781;
+    --gridline: #e1e0d9;
+    --border: rgba(11,11,11,0.10);
+    --good: #0ca30c;
+    --good-text: #006300;
+    --accent: #2a78d6;
+    --accent-soft: rgba(42,120,214,0.10);
+    --star-bg: #fdf6e3;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      color-scheme: dark;
+      --surface-1: #1a1a19;
+      --page: #0d0d0d;
+      --text-primary: #ffffff;
+      --text-secondary: #c3c2b7;
+      --text-muted: #898781;
+      --gridline: #2c2c2a;
+      --border: rgba(255,255,255,0.10);
+      --good: #0ca30c;
+      --good-text: #0ca30c;
+      --accent: #3987e5;
+      --accent-soft: rgba(57,135,229,0.16);
+      --star-bg: #26241d;
+    }
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body {
+    font-family: system-ui, -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: var(--page);
+    color: var(--text-primary);
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 14px 16px 24px;
+    min-height: 100vh;
+  }
+
+  .topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+  .back-btn {
+    font: inherit; font-size: 17px; font-weight: 600; color: var(--text-secondary);
+    background: none; border: none; cursor: pointer; padding: 8px 10px 8px 0; visibility: hidden;
+  }
+  .back-btn.show { visibility: visible; }
+  .lang-toggle {
+    display: inline-flex; border: 1px solid var(--border); border-radius: 999px;
+    background: var(--surface-1); overflow: hidden;
+  }
+  .lang-toggle button {
+    font: inherit; font-size: 13px; font-weight: 600; padding: 5px 12px; border: none;
+    background: transparent; color: var(--text-secondary); cursor: pointer; border-radius: 999px;
+  }
+  .lang-toggle button.active { background: var(--text-primary); color: var(--surface-1); }
+
+  .demo-banner {
+    text-align: center; font-size: 12px; color: var(--text-muted);
+    background: var(--star-bg); border-radius: 8px; padding: 5px; margin-bottom: 12px;
+  }
+
+  .q { font-size: 26px; font-weight: 700; text-align: center; margin: 14px 0 4px; }
+  .q-sub { font-size: 15px; color: var(--text-muted); text-align: center; margin-bottom: 18px; }
+
+  .big-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .big-btn {
+    font: inherit; cursor: pointer;
+    background: var(--surface-1); border: 1px solid var(--border); border-radius: 18px;
+    padding: 20px 8px; text-align: center;
+  }
+  .big-btn .emoji { font-size: 40px; display: block; }
+  .big-btn .lbl { font-size: 21px; font-weight: 700; margin-top: 6px; display: block; }
+  .big-btn.wide { grid-column: 1 / -1; display: flex; align-items: center; justify-content: center; gap: 12px; padding: 18px 8px; }
+  .big-btn.wide .emoji { font-size: 32px; }
+  .big-btn.wide .lbl { margin-top: 0; }
+  .big-btn:active, .big-btn.selected { background: var(--accent-soft); border-color: var(--accent); }
+
+  .chips { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  .chip {
+    font: inherit; font-size: 17px; font-weight: 600; cursor: pointer;
+    background: var(--surface-1); border: 1px solid var(--border); border-radius: 14px;
+    padding: 14px 4px; text-align: center; color: var(--text-primary);
+  }
+  .chip.selected { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+
+  .primary-btn, .ghost-btn {
+    font: inherit; display: block; width: 100%; cursor: pointer;
+    font-size: 22px; font-weight: 700; border-radius: 16px; padding: 17px; margin-top: 14px;
+    border: none;
+  }
+  .primary-btn { background: var(--good); color: #fff; }
+  .primary-btn:disabled { opacity: 0.35; cursor: default; }
+  .ghost-btn { background: transparent; border: 1px solid var(--border); color: var(--text-secondary); font-size: 18px; font-weight: 600; }
+
+  /* number pad */
+  .glu-display {
+    text-align: center; font-size: 56px; font-weight: 700; letter-spacing: 1px;
+    background: var(--surface-1); border: 1px solid var(--border); border-radius: 18px;
+    padding: 12px; margin-bottom: 6px; min-height: 96px;
+  }
+  .glu-display .unit { font-size: 17px; font-weight: 500; color: var(--text-muted); display: block; margin-top: -6px; }
+  .glu-display.placeholder { color: var(--text-muted); }
+  .glu-warn { text-align: center; font-size: 14px; color: #d03b3b; min-height: 20px; margin-bottom: 2px; }
+  .pad { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  .pad button {
+    font: inherit; font-size: 28px; font-weight: 600; cursor: pointer;
+    background: var(--surface-1); border: 1px solid var(--border); border-radius: 14px;
+    padding: 14px 0; color: var(--text-primary);
+  }
+  .pad button:active { background: var(--accent-soft); }
+
+  /* confirm summary */
+  .summary { background: var(--surface-1); border: 1px solid var(--border); border-radius: 18px; padding: 8px 18px; margin-bottom: 6px; }
+  .sum-row { display: flex; justify-content: space-between; align-items: center; padding: 13px 0; border-bottom: 1px solid var(--gridline); }
+  .sum-row:last-child { border-bottom: none; }
+  .sum-label { font-size: 16px; color: var(--text-muted); }
+  .sum-value { font-size: 20px; font-weight: 700; text-align: right; }
+
+  /* success */
+  .success { text-align: center; padding-top: 30px; }
+  .success .big-star { font-size: 92px; }
+  .success h2 { font-size: 30px; margin: 10px 0 6px; }
+  .success p { font-size: 18px; color: var(--text-secondary); line-height: 1.6; }
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <button class="back-btn" id="backbtn" onclick="goBack()">‹ <span id="t-back"></span></button>
+  <div class="lang-toggle">
+    <button id="btn-zh" onclick="setLang('zh')">中文</button>
+    <button id="btn-en" onclick="setLang('en')">EN</button>
+  </div>
+</div>
+<div class="demo-banner" id="banner"></div>
+
+<!-- STEP: meal -->
+<div id="step-meal">
+  <div class="q" id="q-meal"></div>
+  <div class="q-sub" id="q-meal-sub"></div>
+  <div class="big-btns" id="meal-btns"></div>
+  <a class="ghost-btn" id="link-report" style="text-align:center; text-decoration:none;" href="report.html"></a>
+</div>
+
+<!-- STEP: foods -->
+<div id="step-foods" class="hidden">
+  <div class="q" id="q-foods"></div>
+  <div class="q-sub" id="q-foods-sub"></div>
+  <div class="chips" id="food-chips"></div>
+  <button class="primary-btn" id="foods-next" onclick="toGlucose()"></button>
+</div>
+
+<!-- STEP: glucose -->
+<div id="step-glu" class="hidden">
+  <div class="q" id="q-glu"></div>
+  <div class="q-sub" id="q-glu-sub"></div>
+  <div class="glu-display placeholder" id="glu-display"></div>
+  <div class="glu-warn" id="glu-warn"></div>
+  <div class="pad">
+    <button onclick="pad('1')">1</button><button onclick="pad('2')">2</button><button onclick="pad('3')">3</button>
+    <button onclick="pad('4')">4</button><button onclick="pad('5')">5</button><button onclick="pad('6')">6</button>
+    <button onclick="pad('7')">7</button><button onclick="pad('8')">8</button><button onclick="pad('9')">9</button>
+    <button onclick="pad('.')">·</button><button onclick="pad('0')">0</button><button onclick="pad('del')">⌫</button>
+  </div>
+  <button class="primary-btn" id="glu-next" onclick="toTiming()" disabled></button>
+  <button class="ghost-btn" id="glu-skip" onclick="skipGlucose()"></button>
+</div>
+
+<!-- STEP: timing -->
+<div id="step-timing" class="hidden">
+  <div class="q" id="q-timing"></div>
+  <div class="q-sub" id="q-timing-sub"></div>
+  <div class="big-btns" id="timing-btns"></div>
+</div>
+
+<!-- STEP: confirm -->
+<div id="step-confirm" class="hidden">
+  <div class="q" id="q-confirm"></div>
+  <div class="q-sub">&nbsp;</div>
+  <div class="summary" id="summary"></div>
+  <button class="primary-btn" id="submit-btn" onclick="submitLog()"></button>
+</div>
+
+<!-- STEP: success -->
+<div id="step-success" class="hidden">
+  <div class="success">
+    <div class="big-star">⭐</div>
+    <h2 id="ok-title"></h2>
+    <p id="ok-msg"></p>
+    <button class="primary-btn" id="ok-done" onclick="reset()"></button>
+    <a class="ghost-btn" id="ok-report" style="text-align:center; text-decoration:none;" href="report.html"></a>
+  </div>
+</div>
+
+<script>
+// ====== CONFIG: paste your Google Apps Script web-app URL here when ready ======
+const SCRIPT_URL = '';   // empty = demo mode (nothing is saved)
+
+const I18N = {
+  zh: {
+    back: '返回',
+    banner: '示范模式 · 还没连接数据库，提交不会保存',
+    qMeal: '现在记录什么？', qMealSub: '选一个',
+    meals: [
+      {id:'breakfast', emoji:'🌅', zh:'早餐'}, {id:'lunch', emoji:'☀️', zh:'午餐'},
+      {id:'snack', emoji:'🍪', zh:'点心'}, {id:'dinner', emoji:'🌙', zh:'晚餐'},
+    ],
+    onlyTest: {emoji:'🩸', label:'只测血糖'},
+    qFoods: '吃了什么？', qFoodsSub: '可以选几样，也可以跳过',
+    foods: ['咖椰吐司','鸡饭','鱼汤','粥','面','菜饭','水果','咖啡 / 茶','其他'],
+    foodsNext: '下一步 →', foodsNextSkip: '跳过 →',
+    qGlu: '血糖多少？', qGluSub: '按数字输入（mmol/L）',
+    gluPlaceholder: '例如 6.8',
+    gluNext: '下一步 →', gluSkip: '这餐没量血糖，跳过',
+    gluWarnRange: '请输入 1.0 – 33.0 之间的数字',
+    qTiming: '什么时候量的？', qTimingSub: '选一个',
+    timings: [
+      {id:'fasting', emoji:'🌄', label:'空腹 / 饭前'},
+      {id:'post', emoji:'🍚', label:'饭后 2 小时'},
+    ],
+    qConfirm: '确认一下',
+    sumMeal: '记录', sumFoods: '吃了', sumGlu: '血糖', sumTiming: '时间点', sumTime: '时间',
+    mealName: {breakfast:'早餐', lunch:'午餐', snack:'点心', dinner:'晚餐', test:'只测血糖'},
+    timingName: {fasting:'空腹 / 饭前', post:'饭后 2 小时'},
+    noGlu: '没有量', now: '现在',
+    submit: '✓ 提交',
+    okTitle: '记录成功！',
+    okMsgs: '又得一颗星！<br>今天做得很好 👏',
+    okDone: '完成',
+    viewReport: '📈 看我的血糖',
+  },
+  en: {
+    back: 'Back',
+    banner: 'Demo mode · not connected yet, submissions are not saved',
+    qMeal: 'What are you logging?', qMealSub: 'Pick one',
+    meals: [
+      {id:'breakfast', emoji:'🌅', zh:'Breakfast'}, {id:'lunch', emoji:'☀️', zh:'Lunch'},
+      {id:'snack', emoji:'🍪', zh:'Snack'}, {id:'dinner', emoji:'🌙', zh:'Dinner'},
+    ],
+    onlyTest: {emoji:'🩸', label:'Just a glucose test'},
+    qFoods: 'What did you eat?', qFoodsSub: 'Pick a few, or skip',
+    foods: ['Kaya toast','Chicken rice','Fish soup','Porridge','Noodles','Cai fan','Fruit','Coffee / Tea','Other'],
+    foodsNext: 'Next →', foodsNextSkip: 'Skip →',
+    qGlu: 'Glucose reading?', qGluSub: 'Type the number (mmol/L)',
+    gluPlaceholder: 'e.g. 6.8',
+    gluNext: 'Next →', gluSkip: "Didn't test this time — skip",
+    gluWarnRange: 'Please enter a number between 1.0 – 33.0',
+    qTiming: 'When did you test?', qTimingSub: 'Pick one',
+    timings: [
+      {id:'fasting', emoji:'🌄', label:'Fasting / before meal'},
+      {id:'post', emoji:'🍚', label:'2 hours after meal'},
+    ],
+    qConfirm: 'Confirm',
+    sumMeal: 'Logging', sumFoods: 'Ate', sumGlu: 'Glucose', sumTiming: 'Timing', sumTime: 'Time',
+    mealName: {breakfast:'Breakfast', lunch:'Lunch', snack:'Snack', dinner:'Dinner', test:'Glucose test'},
+    timingName: {fasting:'Fasting / before meal', post:'2h after meal'},
+    noGlu: 'Not tested', now: 'now',
+    submit: '✓ Submit',
+    okTitle: 'Logged!',
+    okMsgs: 'Another star earned!<br>Great job today 👏',
+    okDone: 'Done',
+    viewReport: '📈 View my glucose',
+  }
+};
+
+let lang = 'zh';
+const state = { meal: null, foods: [], glu: '', timing: null };
+const STEPS = ['meal', 'foods', 'glu', 'timing', 'confirm', 'success'];
+let step = 'meal';
+const $ = id => document.getElementById(id);
+const T = () => I18N[lang];
+
+function show(s) {
+  step = s;
+  STEPS.forEach(x => $('step-' + (x === 'glu' ? 'glu' : x)).classList.toggle('hidden', x !== s));
+  $('backbtn').classList.toggle('show', s !== 'meal' && s !== 'success');
+  window.scrollTo(0, 0);
+}
+
+function renderStatic() {
+  const t = T();
+  document.documentElement.lang = lang === 'zh' ? 'zh-Hans' : 'en';
+  $('btn-zh').classList.toggle('active', lang === 'zh');
+  $('btn-en').classList.toggle('active', lang === 'en');
+  $('t-back').textContent = t.back;
+  $('banner').textContent = t.banner;
+  $('banner').classList.toggle('hidden', !!SCRIPT_URL);
+
+  $('q-meal').textContent = t.qMeal; $('q-meal-sub').textContent = t.qMealSub;
+  $('meal-btns').innerHTML = t.meals.map(m =>
+    `<button class="big-btn" onclick="pickMeal('${m.id}')"><span class="emoji">${m.emoji}</span><span class="lbl">${m.zh}</span></button>`
+  ).join('') +
+  `<button class="big-btn wide" onclick="pickMeal('test')"><span class="emoji">${t.onlyTest.emoji}</span><span class="lbl">${t.onlyTest.label}</span></button>`;
+
+  $('q-foods').textContent = t.qFoods; $('q-foods-sub').textContent = t.qFoodsSub;
+  $('food-chips').innerHTML = t.foods.map((f, i) =>
+    `<button class="chip${state.foods.includes(i) ? ' selected' : ''}" onclick="toggleFood(${i})">${f}</button>`).join('');
+  $('foods-next').textContent = state.foods.length ? t.foodsNext : t.foodsNextSkip;
+
+  $('q-glu').textContent = t.qGlu; $('q-glu-sub').textContent = t.qGluSub;
+  $('glu-next').textContent = t.gluNext; $('glu-skip').textContent = t.gluSkip;
+  renderGlu();
+
+  $('q-timing').textContent = t.qTiming; $('q-timing-sub').textContent = t.qTimingSub;
+  $('timing-btns').innerHTML = t.timings.map(x =>
+    `<button class="big-btn wide" onclick="pickTiming('${x.id}')"><span class="emoji">${x.emoji}</span><span class="lbl">${x.label}</span></button>`).join('');
+
+  $('q-confirm').textContent = t.qConfirm;
+  $('submit-btn').textContent = t.submit;
+  renderSummary();
+
+  $('ok-title').textContent = t.okTitle;
+  $('ok-msg').innerHTML = t.okMsgs;
+  $('ok-done').textContent = t.okDone;
+  $('link-report').textContent = t.viewReport;
+  $('ok-report').textContent = t.viewReport;
+}
+
+function setLang(l) { lang = l; renderStatic(); }
+
+// ---- steps ----
+function pickMeal(id) {
+  state.meal = id;
+  if (id === 'test') { state.foods = []; show('glu'); $('glu-skip').classList.add('hidden'); }
+  else { $('glu-skip').classList.remove('hidden'); show('foods'); }
+  renderStatic();
+}
+function toggleFood(i) {
+  const k = state.foods.indexOf(i);
+  if (k >= 0) state.foods.splice(k, 1); else state.foods.push(i);
+  renderStatic();
+}
+function toGlucose() { show('glu'); }
+function renderGlu() {
+  const t = T(), d = $('glu-display');
+  if (state.glu) {
+    d.classList.remove('placeholder');
+    d.innerHTML = `${state.glu}<span class="unit">mmol/L</span>`;
+  } else {
+    d.classList.add('placeholder');
+    d.innerHTML = `${t.gluPlaceholder}<span class="unit">mmol/L</span>`;
+  }
+  const v = parseFloat(state.glu);
+  const valid = !isNaN(v) && v >= 1 && v <= 33;
+  $('glu-next').disabled = !valid;
+  $('glu-warn').textContent = state.glu && !valid && state.glu.length >= 2 ? t.gluWarnRange : '';
+}
+function pad(k) {
+  if (k === 'del') state.glu = state.glu.slice(0, -1);
+  else if (k === '.') { if (!state.glu.includes('.') && state.glu) state.glu += '.'; }
+  else if (state.glu.replace('.', '').length < 3) state.glu += k;
+  renderGlu();
+}
+function skipGlucose() { state.glu = ''; state.timing = null; show('confirm'); renderSummary(); }
+function toTiming() { show('timing'); }
+function pickTiming(id) { state.timing = id; show('confirm'); renderSummary(); }
+
+function renderSummary() {
+  const t = T();
+  if (!state.meal) { $('summary').innerHTML = ''; return; }
+  const rows = [];
+  rows.push([t.sumMeal, t.mealName[state.meal]]);
+  if (state.meal !== 'test' && state.foods.length)
+    rows.push([t.sumFoods, state.foods.map(i => t.foods[i]).join('、')]);
+  rows.push([t.sumGlu, state.glu ? `${state.glu} mmol/L` : t.noGlu]);
+  if (state.glu && state.timing) rows.push([t.sumTiming, t.timingName[state.timing]]);
+  const now = new Date();
+  rows.push([t.sumTime, `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`]);
+  $('summary').innerHTML = rows.map(([a, b]) =>
+    `<div class="sum-row"><span class="sum-label">${a}</span><span class="sum-value">${b}</span></div>`).join('');
+}
+
+function goBack() {
+  if (step === 'foods') show('meal');
+  else if (step === 'glu') show(state.meal === 'test' ? 'meal' : 'foods');
+  else if (step === 'timing') show('glu');
+  else if (step === 'confirm') show(state.glu ? 'timing' : 'glu');
+}
+
+async function submitLog() {
+  const t = T();
+  $('submit-btn').disabled = true;
+  if (SCRIPT_URL) {
+    const body = new URLSearchParams({
+      meal: state.meal,
+      foods: state.foods.map(i => I18N.zh.foods[i]).join(', '),
+      glucose: state.glu,
+      timing: state.timing || '',
+      lang: lang,
+    });
+    try { await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body }); }
+    catch (e) { /* keep going — Apps Script no-cors always opaque */ }
+  }
+  $('submit-btn').disabled = false;
+  show('success');
+}
+
+function reset() {
+  state.meal = null; state.foods = []; state.glu = ''; state.timing = null;
+  renderStatic();
+  show('meal');
+}
+
+renderStatic();
+show('meal');
+</script>
+</body>
+</html>
