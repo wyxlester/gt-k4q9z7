@@ -264,6 +264,7 @@
     <div class="big-star">⭐</div>
     <h2 id="ok-title"></h2>
     <p id="ok-msg"></p>
+    <p id="ok-range" style="font-weight:700; font-size:18px; margin-top:6px;"></p>
     <button class="primary-btn" id="ok-done" onclick="reset()"></button>
     <a class="ghost-btn" id="ok-report" style="text-align:center; text-decoration:none;" href="report.html"></a>
   </div>
@@ -323,6 +324,9 @@ const I18N = {
     okTitle: '记录成功！',
     okMsgs: '又得一颗星！<br>今天做得很好 👏',
     okMsgsBackfill: '昨天的记录补上了！⭐',
+    okInRange: '💚 这次血糖在健康范围内，很棒！',
+    okHigh: '这次有点偏高，没关系——记下来就知道原因了 👍',
+    okLow: '⚠️ 血糖偏低！先吃点东西休息一下，并告诉家人',
     okDone: '完成',
   },
   en: {
@@ -366,6 +370,9 @@ const I18N = {
     okTitle: 'Logged!',
     okMsgs: 'Another star earned!<br>Great job today 👏',
     okMsgsBackfill: "Yesterday's record is in! ⭐",
+    okInRange: '💚 This reading is in the healthy range — well done!',
+    okHigh: "A bit high this time — that's okay, logging it is how we learn 👍",
+    okLow: '⚠️ Low blood sugar! Eat something now, rest, and tell the family',
     okDone: 'Done',
   }
 };
@@ -642,11 +649,25 @@ async function submitLog() {
   }
   $('submit-btn').disabled = false;
   renderStatic();
+  setOkRange();
   show('success');
+}
+
+function setOkRange() {
+  const el = $('ok-range');
+  el.textContent = ''; el.style.color = '';
+  if (!state.glu) return;
+  const v = parseFloat(state.glu);
+  if (isNaN(v)) return;
+  const t = T();
+  if (v < 4.0) { el.textContent = t.okLow; el.style.color = 'var(--warn)'; }
+  else if (state.timing === 'fasting' ? v > 7.0 : v >= 10.0) { el.textContent = t.okHigh; el.style.color = 'var(--text-muted)'; }
+  else { el.textContent = t.okInRange; el.style.color = 'var(--good-text)'; }
 }
 
 function reset() {
   state.meal = null; state.foodsSel = []; state.glu = ''; state.timing = null; state.when = null;
+  $('ok-range').textContent = '';
   $('other-row').classList.remove('show');
   renderStatic();
   show('meal');
