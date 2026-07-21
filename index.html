@@ -23,6 +23,7 @@
     --border: rgba(11,11,11,0.10);
     --good: #0ca30c;
     --good-text: #006300;
+    --warn: #d03b3b;
     --accent: #2a78d6;
     --accent-soft: rgba(42,120,214,0.10);
     --star-bg: #fdf6e3;
@@ -39,6 +40,7 @@
       --border: rgba(255,255,255,0.10);
       --good: #0ca30c;
       --good-text: #0ca30c;
+      --warn: #e66767;
       --accent: #3987e5;
       --accent-soft: rgba(57,135,229,0.16);
       --star-bg: #26241d;
@@ -71,11 +73,6 @@
   }
   .lang-toggle button.active { background: var(--text-primary); color: var(--surface-1); }
 
-  .demo-banner {
-    text-align: center; font-size: 12px; color: var(--text-muted);
-    background: var(--star-bg); border-radius: 8px; padding: 5px; margin-bottom: 12px;
-  }
-
   .q { font-size: 26px; font-weight: 700; text-align: center; margin: 14px 0 4px; }
   .q-sub { font-size: 15px; color: var(--text-muted); text-align: center; margin-bottom: 18px; }
 
@@ -97,8 +94,22 @@
     font: inherit; font-size: 17px; font-weight: 600; cursor: pointer;
     background: var(--surface-1); border: 1px solid var(--border); border-radius: 14px;
     padding: 14px 4px; text-align: center; color: var(--text-primary);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
   .chip.selected { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+  .chip.other { border-style: dashed; color: var(--text-secondary); }
+
+  .other-row { display: none; gap: 10px; margin-top: 12px; }
+  .other-row.show { display: flex; }
+  .other-row input {
+    flex: 1; font: inherit; font-size: 18px; padding: 13px 14px;
+    border: 1px solid var(--accent); border-radius: 14px;
+    background: var(--surface-1); color: var(--text-primary); min-width: 0;
+  }
+  .other-row button {
+    font: inherit; font-size: 17px; font-weight: 700; padding: 0 20px;
+    border: none; border-radius: 14px; background: var(--accent); color: #fff; cursor: pointer;
+  }
 
   .primary-btn, .ghost-btn {
     font: inherit; display: block; width: 100%; cursor: pointer;
@@ -108,8 +119,8 @@
   .primary-btn { background: var(--good); color: #fff; }
   .primary-btn:disabled { opacity: 0.35; cursor: default; }
   .ghost-btn { background: transparent; border: 1px solid var(--border); color: var(--text-secondary); font-size: 18px; font-weight: 600; }
+  .ghost-btn.selected { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
 
-  /* number pad */
   .glu-display {
     text-align: center; font-size: 56px; font-weight: 700; letter-spacing: 1px;
     background: var(--surface-1); border: 1px solid var(--border); border-radius: 18px;
@@ -117,7 +128,7 @@
   }
   .glu-display .unit { font-size: 17px; font-weight: 500; color: var(--text-muted); display: block; margin-top: -6px; }
   .glu-display.placeholder { color: var(--text-muted); }
-  .glu-warn { text-align: center; font-size: 14px; color: #d03b3b; min-height: 20px; margin-bottom: 2px; }
+  .glu-warn { text-align: center; font-size: 14px; color: var(--warn); min-height: 20px; margin-bottom: 2px; }
   .pad { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
   .pad button {
     font: inherit; font-size: 28px; font-weight: 600; cursor: pointer;
@@ -126,14 +137,44 @@
   }
   .pad button:active { background: var(--accent-soft); }
 
-  /* confirm summary */
   .summary { background: var(--surface-1); border: 1px solid var(--border); border-radius: 18px; padding: 8px 18px; margin-bottom: 6px; }
   .sum-row { display: flex; justify-content: space-between; align-items: center; padding: 13px 0; border-bottom: 1px solid var(--gridline); }
   .sum-row:last-child { border-bottom: none; }
   .sum-label { font-size: 16px; color: var(--text-muted); }
-  .sum-value { font-size: 20px; font-weight: 700; text-align: right; }
+  .sum-value { font-size: 20px; font-weight: 700; text-align: right; max-width: 65%; }
+  .sum-row.tappable { cursor: pointer; }
+  .sum-row.tappable .sum-value { color: var(--accent); }
+  .sum-hint { font-size: 12px; font-weight: 500; color: var(--text-muted); display: block; }
 
-  /* success */
+  /* time editor */
+  .time-editor {
+    display: none; background: var(--surface-1); border: 1px solid var(--accent);
+    border-radius: 18px; padding: 16px; margin-bottom: 6px;
+  }
+  .time-editor.show { display: block; }
+  .te-title { font-size: 16px; font-weight: 700; margin-bottom: 10px; }
+  .te-days { display: flex; gap: 10px; margin-bottom: 12px; }
+  .te-days button, .te-presets button {
+    font: inherit; font-size: 16px; font-weight: 600; cursor: pointer;
+    background: var(--page); border: 1px solid var(--border); border-radius: 12px;
+    padding: 11px 6px; color: var(--text-primary); flex: 1;
+  }
+  .te-days button.selected, .te-presets button.selected { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+  .te-presets { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+  .te-custom { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+  .te-custom label { font-size: 15px; color: var(--text-secondary); }
+  .te-custom input {
+    flex: 1; font: inherit; font-size: 18px; padding: 9px 12px;
+    border: 1px solid var(--border); border-radius: 12px;
+    background: var(--page); color: var(--text-primary);
+  }
+  .te-warn { font-size: 14px; color: var(--warn); min-height: 20px; }
+  .te-done {
+    font: inherit; display: block; width: 100%; cursor: pointer;
+    font-size: 17px; font-weight: 700; border-radius: 12px; padding: 12px;
+    border: none; background: var(--text-primary); color: var(--surface-1);
+  }
+
   .success { text-align: center; padding-top: 30px; }
   .success .big-star { font-size: 92px; }
   .success h2 { font-size: 30px; margin: 10px 0 6px; }
@@ -150,13 +191,13 @@
     <button id="btn-en" onclick="setLang('en')">EN</button>
   </div>
 </div>
-<div class="demo-banner" id="banner"></div>
 
 <!-- STEP: meal -->
 <div id="step-meal">
   <div class="q" id="q-meal"></div>
   <div class="q-sub" id="q-meal-sub"></div>
   <div class="big-btns" id="meal-btns"></div>
+  <button class="ghost-btn" id="backfill-btn" onclick="toggleBackfill()"></button>
   <a class="ghost-btn" id="link-report" style="text-align:center; text-decoration:none;" href="report.html"></a>
 </div>
 
@@ -165,6 +206,10 @@
   <div class="q" id="q-foods"></div>
   <div class="q-sub" id="q-foods-sub"></div>
   <div class="chips" id="food-chips"></div>
+  <div class="other-row" id="other-row">
+    <input id="other-input" autocomplete="off">
+    <button onclick="addOther()" id="other-add"></button>
+  </div>
   <button class="primary-btn" id="foods-next" onclick="toGlucose()"></button>
 </div>
 
@@ -196,6 +241,20 @@
   <div class="q" id="q-confirm"></div>
   <div class="q-sub">&nbsp;</div>
   <div class="summary" id="summary"></div>
+  <div class="time-editor" id="time-editor">
+    <div class="te-title" id="te-title"></div>
+    <div class="te-days">
+      <button id="te-yest" onclick="setDayOffset(-1)"></button>
+      <button id="te-today" onclick="setDayOffset(0)"></button>
+    </div>
+    <div class="te-presets" id="te-presets"></div>
+    <div class="te-custom">
+      <label id="te-custom-lbl"></label>
+      <input type="time" id="te-time" onchange="setCustomTime()">
+    </div>
+    <div class="te-warn" id="te-warn"></div>
+    <button class="te-done" id="te-done" onclick="closeTimeEditor()"></button>
+  </div>
   <button class="primary-btn" id="submit-btn" onclick="submitLog()"></button>
 </div>
 
@@ -211,21 +270,33 @@
 </div>
 
 <script>
-// ====== CONFIG: paste your Google Apps Script web-app URL here when ready ======
+// ====== backend endpoint ======
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbziaghYfMv1nmmnIdXfq_Xbg1wvgehk6Yx5KTZVn3uz3A8eBPTUYgfw1kcpF1BUKrxGeQ/exec';
+const CUSTOM_KEY = 'gt_custom_foods';
+
+// default foods: zh label is the canonical value stored in the sheet
+const DEFAULT_FOODS = [
+  {zh:'咖椰吐司', en:'Kaya toast'}, {zh:'鸡饭', en:'Chicken rice'}, {zh:'鱼汤', en:'Fish soup'},
+  {zh:'粥', en:'Porridge'}, {zh:'面', en:'Noodles'}, {zh:'菜饭', en:'Cai fan'},
+  {zh:'水果', en:'Fruit'}, {zh:'咖啡 / 茶', en:'Coffee / Tea'},
+];
 
 const I18N = {
   zh: {
     back: '返回',
-    banner: '示范模式 · 还没连接数据库，提交不会保存',
     qMeal: '现在记录什么？', qMealSub: '选一个',
     meals: [
-      {id:'breakfast', emoji:'🌅', zh:'早餐'}, {id:'lunch', emoji:'☀️', zh:'午餐'},
-      {id:'snack', emoji:'🍪', zh:'点心'}, {id:'dinner', emoji:'🌙', zh:'晚餐'},
+      {id:'breakfast', emoji:'🌅', label:'早餐'}, {id:'lunch', emoji:'☀️', label:'午餐'},
+      {id:'snack', emoji:'🍪', label:'点心'}, {id:'dinner', emoji:'🌙', label:'晚餐'},
     ],
     onlyTest: {emoji:'🩸', label:'只测血糖'},
+    backfill: '🕐 补记昨天的记录',
+    backfillOn: '✓ 正在补记昨天（点击取消）',
+    viewReport: '📈 看我的血糖',
     qFoods: '吃了什么？', qFoodsSub: '可以选几样，也可以跳过',
-    foods: ['咖椰吐司','鸡饭','鱼汤','粥','面','菜饭','水果','咖啡 / 茶','其他'],
+    otherChip: '其他 ✏️',
+    otherPlaceholder: '输入吃了什么（可用语音）',
+    otherAdd: '添加',
     foodsNext: '下一步 →', foodsNextSkip: '跳过 →',
     qGlu: '血糖多少？', qGluSub: '按数字输入（mmol/L）',
     gluPlaceholder: '例如 6.8',
@@ -238,26 +309,37 @@ const I18N = {
     ],
     qConfirm: '确认一下',
     sumMeal: '记录', sumFoods: '吃了', sumGlu: '血糖', sumTiming: '时间点', sumTime: '时间',
+    sumTimeHint: '点击可改时间',
     mealName: {breakfast:'早餐', lunch:'午餐', snack:'点心', dinner:'晚餐', test:'只测血糖'},
     timingName: {fasting:'空腹 / 饭前', post:'饭后 2 小时'},
-    noGlu: '没有量', now: '现在',
+    noGlu: '没有量',
+    today: '今天', yesterday: '昨天',
+    teTitle: '什么时候吃 / 量的？',
+    tePresets: [{label:'早上 7:00', h:7, m:0}, {label:'中午 12:30', h:12, m:30}, {label:'下午 3:00', h:15, m:0}, {label:'晚上 7:00', h:19, m:0}],
+    teCustom: '其他时间：',
+    teWarnFuture: '不能选未来的时间',
+    teDone: '好了 ✓',
     submit: '✓ 提交',
     okTitle: '记录成功！',
     okMsgs: '又得一颗星！<br>今天做得很好 👏',
+    okMsgsBackfill: '昨天的记录补上了！⭐',
     okDone: '完成',
-    viewReport: '📈 看我的血糖',
   },
   en: {
     back: 'Back',
-    banner: 'Demo mode · not connected yet, submissions are not saved',
     qMeal: 'What are you logging?', qMealSub: 'Pick one',
     meals: [
-      {id:'breakfast', emoji:'🌅', zh:'Breakfast'}, {id:'lunch', emoji:'☀️', zh:'Lunch'},
-      {id:'snack', emoji:'🍪', zh:'Snack'}, {id:'dinner', emoji:'🌙', zh:'Dinner'},
+      {id:'breakfast', emoji:'🌅', label:'Breakfast'}, {id:'lunch', emoji:'☀️', label:'Lunch'},
+      {id:'snack', emoji:'🍪', label:'Snack'}, {id:'dinner', emoji:'🌙', label:'Dinner'},
     ],
     onlyTest: {emoji:'🩸', label:'Just a glucose test'},
+    backfill: "🕐 Log for yesterday",
+    backfillOn: '✓ Logging for yesterday (tap to cancel)',
+    viewReport: '📈 View my glucose',
     qFoods: 'What did you eat?', qFoodsSub: 'Pick a few, or skip',
-    foods: ['Kaya toast','Chicken rice','Fish soup','Porridge','Noodles','Cai fan','Fruit','Coffee / Tea','Other'],
+    otherChip: 'Other ✏️',
+    otherPlaceholder: 'Type what you ate (voice works)',
+    otherAdd: 'Add',
     foodsNext: 'Next →', foodsNextSkip: 'Skip →',
     qGlu: 'Glucose reading?', qGluSub: 'Type the number (mmol/L)',
     gluPlaceholder: 'e.g. 6.8',
@@ -270,28 +352,50 @@ const I18N = {
     ],
     qConfirm: 'Confirm',
     sumMeal: 'Logging', sumFoods: 'Ate', sumGlu: 'Glucose', sumTiming: 'Timing', sumTime: 'Time',
+    sumTimeHint: 'Tap to change',
     mealName: {breakfast:'Breakfast', lunch:'Lunch', snack:'Snack', dinner:'Dinner', test:'Glucose test'},
     timingName: {fasting:'Fasting / before meal', post:'2h after meal'},
-    noGlu: 'Not tested', now: 'now',
+    noGlu: 'Not tested',
+    today: 'Today', yesterday: 'Yesterday',
+    teTitle: 'When did you eat / test?',
+    tePresets: [{label:'7:00 am', h:7, m:0}, {label:'12:30 pm', h:12, m:30}, {label:'3:00 pm', h:15, m:0}, {label:'7:00 pm', h:19, m:0}],
+    teCustom: 'Other time:',
+    teWarnFuture: "Can't pick a future time",
+    teDone: 'Done ✓',
     submit: '✓ Submit',
     okTitle: 'Logged!',
     okMsgs: 'Another star earned!<br>Great job today 👏',
+    okMsgsBackfill: "Yesterday's record is in! ⭐",
     okDone: 'Done',
-    viewReport: '📈 View my glucose',
   }
 };
 
 let lang = 'zh';
-const state = { meal: null, foods: [], glu: '', timing: null };
+const state = { meal: null, foodsSel: [], glu: '', timing: null, when: null };
+// when: null = "now" (server stamps) | {off: 0|-1, h, m}
 const STEPS = ['meal', 'foods', 'glu', 'timing', 'confirm', 'success'];
 let step = 'meal';
 const $ = id => document.getElementById(id);
 const T = () => I18N[lang];
 
+// ---- custom foods (remembered on this phone) ----
+function loadCustom() {
+  try { return JSON.parse(localStorage.getItem(CUSTOM_KEY) || '[]'); } catch (e) { return []; }
+}
+function saveCustom(list) {
+  try { localStorage.setItem(CUSTOM_KEY, JSON.stringify(list.slice(0, 30))); } catch (e) {}
+}
+function rememberFood(text) {
+  const list = loadCustom().filter(x => x !== text);
+  list.unshift(text);
+  saveCustom(list);
+}
+
 function show(s) {
   step = s;
-  STEPS.forEach(x => $('step-' + (x === 'glu' ? 'glu' : x)).classList.toggle('hidden', x !== s));
+  STEPS.forEach(x => $('step-' + x).classList.toggle('hidden', x !== s));
   $('backbtn').classList.toggle('show', s !== 'meal' && s !== 'success');
+  if (s !== 'confirm') closeTimeEditor(true);
   window.scrollTo(0, 0);
 }
 
@@ -301,19 +405,20 @@ function renderStatic() {
   $('btn-zh').classList.toggle('active', lang === 'zh');
   $('btn-en').classList.toggle('active', lang === 'en');
   $('t-back').textContent = t.back;
-  $('banner').textContent = t.banner;
-  $('banner').classList.toggle('hidden', !!SCRIPT_URL);
 
   $('q-meal').textContent = t.qMeal; $('q-meal-sub').textContent = t.qMealSub;
   $('meal-btns').innerHTML = t.meals.map(m =>
-    `<button class="big-btn" onclick="pickMeal('${m.id}')"><span class="emoji">${m.emoji}</span><span class="lbl">${m.zh}</span></button>`
+    `<button class="big-btn" onclick="pickMeal('${m.id}')"><span class="emoji">${m.emoji}</span><span class="lbl">${m.label}</span></button>`
   ).join('') +
   `<button class="big-btn wide" onclick="pickMeal('test')"><span class="emoji">${t.onlyTest.emoji}</span><span class="lbl">${t.onlyTest.label}</span></button>`;
+  renderBackfillBtn();
+  $('link-report').textContent = t.viewReport;
 
   $('q-foods').textContent = t.qFoods; $('q-foods-sub').textContent = t.qFoodsSub;
-  $('food-chips').innerHTML = t.foods.map((f, i) =>
-    `<button class="chip${state.foods.includes(i) ? ' selected' : ''}" onclick="toggleFood(${i})">${f}</button>`).join('');
-  $('foods-next').textContent = state.foods.length ? t.foodsNext : t.foodsNextSkip;
+  renderChips();
+  $('other-input').placeholder = t.otherPlaceholder;
+  $('other-add').textContent = t.otherAdd;
+  $('foods-next').textContent = state.foodsSel.length ? t.foodsNext : t.foodsNextSkip;
 
   $('q-glu').textContent = t.qGlu; $('q-glu-sub').textContent = t.qGluSub;
   $('glu-next').textContent = t.gluNext; $('glu-skip').textContent = t.gluSkip;
@@ -326,29 +431,78 @@ function renderStatic() {
   $('q-confirm').textContent = t.qConfirm;
   $('submit-btn').textContent = t.submit;
   renderSummary();
+  renderTimeEditor();
 
   $('ok-title').textContent = t.okTitle;
-  $('ok-msg').innerHTML = t.okMsgs;
+  $('ok-msg').innerHTML = state.when && state.when.off === -1 ? t.okMsgsBackfill : t.okMsgs;
   $('ok-done').textContent = t.okDone;
-  $('link-report').textContent = t.viewReport;
   $('ok-report').textContent = t.viewReport;
 }
 
 function setLang(l) { lang = l; renderStatic(); }
 
-// ---- steps ----
+// ---- backfill toggle (home screen) ----
+function renderBackfillBtn() {
+  const active = state.when && state.when.off === -1;
+  $('backfill-btn').textContent = active ? T().backfillOn : T().backfill;
+  $('backfill-btn').classList.toggle('selected', active);
+}
+function toggleBackfill() {
+  if (state.when && state.when.off === -1) state.when = null;
+  else {
+    const n = new Date();
+    state.when = { off: -1, h: n.getHours(), m: n.getMinutes() };
+  }
+  renderBackfillBtn();
+}
+
+// ---- meal ----
 function pickMeal(id) {
   state.meal = id;
-  if (id === 'test') { state.foods = []; show('glu'); $('glu-skip').classList.add('hidden'); }
+  if (id === 'test') { state.foodsSel = []; $('glu-skip').classList.add('hidden'); show('glu'); }
   else { $('glu-skip').classList.remove('hidden'); show('foods'); }
   renderStatic();
 }
-function toggleFood(i) {
-  const k = state.foods.indexOf(i);
-  if (k >= 0) state.foods.splice(k, 1); else state.foods.push(i);
-  renderStatic();
+
+// ---- foods ----
+function chipLabel(val) {
+  const def = DEFAULT_FOODS.find(f => f.zh === val);
+  return def ? (lang === 'zh' ? def.zh : def.en) : val;
 }
-function toGlucose() { show('glu'); }
+function renderChips() {
+  const t = T();
+  const customs = loadCustom();
+  const items = DEFAULT_FOODS.map(f => f.zh).concat(customs.filter(c => !DEFAULT_FOODS.some(f => f.zh === c)));
+  $('food-chips').innerHTML = items.map(val => {
+    const sel = state.foodsSel.includes(val);
+    return `<button class="chip${sel ? ' selected' : ''}" onclick="toggleFood(${JSON.stringify(val).replace(/"/g, '&quot;')})">${chipLabel(val)}</button>`;
+  }).join('') + `<button class="chip other" onclick="showOther()">${t.otherChip}</button>`;
+  $('foods-next').textContent = state.foodsSel.length ? t.foodsNext : t.foodsNextSkip;
+}
+function toggleFood(val) {
+  const k = state.foodsSel.indexOf(val);
+  if (k >= 0) state.foodsSel.splice(k, 1); else state.foodsSel.push(val);
+  renderChips();
+}
+function showOther() {
+  $('other-row').classList.add('show');
+  $('other-input').focus();
+}
+function addOther() {
+  const text = $('other-input').value.trim();
+  if (!text) return;
+  if (!state.foodsSel.includes(text)) state.foodsSel.push(text);
+  rememberFood(text);
+  $('other-input').value = '';
+  renderChips();
+}
+function toGlucose() {
+  const pending = $('other-input').value.trim();
+  if (pending) addOther();
+  show('glu');
+}
+
+// ---- glucose ----
 function renderGlu() {
   const t = T(), d = $('glu-display');
   if (state.glu) {
@@ -369,23 +523,98 @@ function pad(k) {
   else if (state.glu.replace('.', '').length < 3) state.glu += k;
   renderGlu();
 }
-function skipGlucose() { state.glu = ''; state.timing = null; show('confirm'); renderSummary(); }
+function skipGlucose() { state.glu = ''; state.timing = null; show('confirm'); renderStatic(); }
 function toTiming() { show('timing'); }
-function pickTiming(id) { state.timing = id; show('confirm'); renderSummary(); }
+function pickTiming(id) { state.timing = id; show('confirm'); renderStatic(); }
+
+// ---- time handling ----
+function whenDate() {
+  if (!state.when) return null;
+  const d = new Date();
+  d.setDate(d.getDate() + state.when.off);
+  d.setHours(state.when.h, state.when.m, 0, 0);
+  return d;
+}
+function whenIsFuture() {
+  const d = whenDate();
+  return d !== null && d > new Date();
+}
+function whenText() {
+  const t = T();
+  const n = new Date();
+  if (!state.when) return `${t.today} ${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}`;
+  const dayName = state.when.off === -1 ? t.yesterday : t.today;
+  return `${dayName} ${String(state.when.h).padStart(2,'0')}:${String(state.when.m).padStart(2,'0')}`;
+}
 
 function renderSummary() {
   const t = T();
   if (!state.meal) { $('summary').innerHTML = ''; return; }
   const rows = [];
-  rows.push([t.sumMeal, t.mealName[state.meal]]);
-  if (state.meal !== 'test' && state.foods.length)
-    rows.push([t.sumFoods, state.foods.map(i => t.foods[i]).join('、')]);
-  rows.push([t.sumGlu, state.glu ? `${state.glu} mmol/L` : t.noGlu]);
-  if (state.glu && state.timing) rows.push([t.sumTiming, t.timingName[state.timing]]);
-  const now = new Date();
-  rows.push([t.sumTime, `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`]);
-  $('summary').innerHTML = rows.map(([a, b]) =>
-    `<div class="sum-row"><span class="sum-label">${a}</span><span class="sum-value">${b}</span></div>`).join('');
+  rows.push([t.sumMeal, t.mealName[state.meal], '']);
+  if (state.meal !== 'test' && state.foodsSel.length)
+    rows.push([t.sumFoods, state.foodsSel.map(chipLabel).join('、'), '']);
+  rows.push([t.sumGlu, state.glu ? `${state.glu} mmol/L` : t.noGlu, '']);
+  if (state.glu && state.timing) rows.push([t.sumTiming, t.timingName[state.timing], '']);
+  rows.push([t.sumTime, whenText(), 'time']);
+  $('summary').innerHTML = rows.map(([a, b, kind]) => {
+    if (kind === 'time') {
+      return `<div class="sum-row tappable" onclick="openTimeEditor()"><span class="sum-label">${a}<span class="sum-hint">${t.sumTimeHint}</span></span><span class="sum-value">${b} ›</span></div>`;
+    }
+    return `<div class="sum-row"><span class="sum-label">${a}</span><span class="sum-value">${b}</span></div>`;
+  }).join('');
+  $('submit-btn').disabled = whenIsFuture();
+}
+
+// ---- time editor ----
+function openTimeEditor() {
+  if (!state.when) {
+    const n = new Date();
+    state.when = { off: 0, h: n.getHours(), m: n.getMinutes() };
+  }
+  renderTimeEditor();
+  $('time-editor').classList.add('show');
+}
+function closeTimeEditor(silent) {
+  $('time-editor').classList.remove('show');
+  if (!silent) { renderSummary(); }
+}
+function renderTimeEditor() {
+  const t = T();
+  $('te-title').textContent = t.teTitle;
+  $('te-yest').textContent = t.yesterday;
+  $('te-today').textContent = t.today;
+  $('te-custom-lbl').textContent = t.teCustom;
+  $('te-done').textContent = t.teDone;
+  const w = state.when;
+  $('te-yest').classList.toggle('selected', !!w && w.off === -1);
+  $('te-today').classList.toggle('selected', !w || w.off === 0);
+  $('te-presets').innerHTML = t.tePresets.map((p, i) =>
+    `<button onclick="setPreset(${p.h},${p.m})" class="${w && w.h === p.h && w.m === p.m ? 'selected' : ''}">${p.label}</button>`).join('');
+  if (w) $('te-time').value = `${String(w.h).padStart(2,'0')}:${String(w.m).padStart(2,'0')}`;
+  $('te-warn').textContent = whenIsFuture() ? t.teWarnFuture : '';
+  $('submit-btn').disabled = whenIsFuture();
+}
+function setDayOffset(off) {
+  if (!state.when) openTimeEditor();
+  state.when.off = off;
+  renderTimeEditor(); renderSummary();
+  $('time-editor').classList.add('show');
+}
+function setPreset(h, m) {
+  if (!state.when) openTimeEditor();
+  state.when.h = h; state.when.m = m;
+  renderTimeEditor(); renderSummary();
+  $('time-editor').classList.add('show');
+}
+function setCustomTime() {
+  const v = $('te-time').value;
+  if (!v) return;
+  const [h, m] = v.split(':').map(Number);
+  if (!state.when) openTimeEditor();
+  state.when.h = h; state.when.m = m;
+  renderTimeEditor(); renderSummary();
+  $('time-editor').classList.add('show');
 }
 
 function goBack() {
@@ -396,25 +625,29 @@ function goBack() {
 }
 
 async function submitLog() {
-  const t = T();
+  if (whenIsFuture()) return;
   $('submit-btn').disabled = true;
   if (SCRIPT_URL) {
-    const body = new URLSearchParams({
+    const params = {
       meal: state.meal,
-      foods: state.foods.map(i => I18N.zh.foods[i]).join(', '),
+      foods: state.foodsSel.join(', '),
       glucose: state.glu,
       timing: state.timing || '',
       lang: lang,
-    });
-    try { await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body }); }
-    catch (e) { /* keep going — Apps Script no-cors always opaque */ }
+    };
+    const d = whenDate();
+    if (d) params.ts = d.toISOString();
+    try { await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: new URLSearchParams(params) }); }
+    catch (e) { /* no-cors response is opaque either way */ }
   }
   $('submit-btn').disabled = false;
+  renderStatic();
   show('success');
 }
 
 function reset() {
-  state.meal = null; state.foods = []; state.glu = ''; state.timing = null;
+  state.meal = null; state.foodsSel = []; state.glu = ''; state.timing = null; state.when = null;
+  $('other-row').classList.remove('show');
   renderStatic();
   show('meal');
 }
