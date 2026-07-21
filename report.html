@@ -67,7 +67,6 @@
   header.card { text-align: center; }
   h1 { font-size: 24px; font-weight: 700; }
   .sub { color: var(--text-secondary); font-size: 15px; margin-top: 4px; }
-  .sub-en { color: var(--text-muted); font-size: 12px; margin-top: 2px; }
 
   .lang-toggle {
     display: inline-flex; margin-top: 12px;
@@ -81,7 +80,6 @@
   }
   .lang-toggle button.active { background: var(--text-primary); color: var(--surface-1); }
 
-  /* view switcher */
   .view-toggle { display: flex; gap: 6px; margin-bottom: 14px; }
   .view-toggle button {
     flex: 1; font: inherit; font-size: 16px; font-weight: 600;
@@ -96,17 +94,15 @@
     border-radius: 14px; padding: 15px; margin-bottom: 14px;
   }
 
-  /* day picker */
-  .day-picker { display: flex; align-items: center; justify-content: center; gap: 14px; margin-bottom: 10px; }
-  .day-picker button {
+  .picker { display: flex; align-items: center; justify-content: center; gap: 14px; margin-bottom: 14px; }
+  .picker button {
     font: inherit; font-size: 18px; font-weight: 700; line-height: 1;
     width: 40px; height: 40px; border: 1px solid var(--border); border-radius: 50%;
     background: var(--surface-1); color: var(--text-primary); cursor: pointer;
   }
-  .day-picker button:disabled { opacity: 0.3; cursor: default; }
-  .day-picker .dp-label { font-size: 17px; font-weight: 700; min-width: 150px; text-align: center; }
+  .picker button:disabled { opacity: 0.3; cursor: default; }
+  .picker .p-label { font-size: 17px; font-weight: 700; min-width: 170px; text-align: center; }
 
-  /* stat tiles */
   .stats { display: flex; gap: 10px; }
   .stats .card { flex: 1; text-align: center; padding: 14px 6px; margin-bottom: 0; }
   .stat-label { font-size: 14px; color: var(--text-secondary); }
@@ -131,15 +127,14 @@
     transform: translate(-50%, -110%); white-space: nowrap; z-index: 5;
   }
 
-  /* streak: week row */
   .streak { display: flex; gap: 6px; justify-content: space-between; }
   .day-cell { flex: 1; text-align: center; background: var(--star-bg); border-radius: 10px; padding: 8px 0; }
+  .day-cell.dim { background: transparent; border: 1px dashed var(--gridline); opacity: 0.6; }
   .day-cell .dname { font-size: 13px; color: var(--text-secondary); }
-  .day-cell .star { font-size: 20px; margin-top: 2px; }
+  .day-cell .star { font-size: 20px; margin-top: 2px; min-height: 26px; }
   .streak-msg { text-align: center; font-size: 16px; margin-top: 12px; font-weight: 600; }
   .streak-msg .n { color: var(--good-text); }
 
-  /* streak: month grid */
   .cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
   .cal .cal-h { text-align: center; font-size: 12px; color: var(--text-muted); padding: 2px 0; }
   .cal .cal-d {
@@ -152,22 +147,53 @@
   .cal .cal-d.future { background: transparent; border: 1px dashed var(--gridline); opacity: 0.6; }
 
   .reward-bar { background: var(--gridline); border-radius: 999px; height: 14px; overflow: hidden; margin: 10px 0 6px; }
-  .reward-fill { background: var(--good); height: 100%; border-radius: 999px; }
+  .reward-fill { background: var(--good); height: 100%; border-radius: 999px; transition: width 0.3s; }
   .reward-line { font-size: 15px; color: var(--text-secondary); }
   .reward-hit { font-size: 17px; font-weight: 700; margin-top: 8px; }
 
   table { width: 100%; border-collapse: collapse; font-size: 14px; }
   th { text-align: left; color: var(--text-muted); font-weight: 500; padding: 6px 4px; border-bottom: 1px solid var(--gridline); }
   td { padding: 7px 4px; border-bottom: 1px solid var(--gridline); color: var(--text-secondary); white-space: nowrap; }
+  td.what { max-width: 130px; overflow: hidden; text-overflow: ellipsis; }
   td.num { font-variant-numeric: tabular-nums; font-weight: 600; color: var(--text-primary); }
   tr:last-child td { border-bottom: none; }
   .flag-good { color: var(--good-text); font-weight: 600; }
   .flag-high { color: var(--critical); font-weight: 700; }
   .hidden { display: none; }
 
-  .note { font-size: 13px; color: var(--text-muted); text-align: center; padding-bottom: 8px; }
+  .note { font-size: 13px; color: var(--text-muted); text-align: center; padding-bottom: 4px; }
   .insight { background: var(--band); border-radius: 10px; padding: 12px 14px; font-size: 15px; line-height: 1.6; margin-top: 12px; }
   .empty-msg { text-align: center; color: var(--text-muted); font-size: 15px; padding: 30px 0; }
+  .loading { text-align: center; color: var(--text-muted); font-size: 16px; padding: 60px 0; }
+
+  .reset-link {
+    display: block; margin: 6px auto 20px; text-align: center;
+    font-size: 13px; color: var(--text-muted); background: none; border: none;
+    cursor: pointer; text-decoration: underline; font-family: inherit;
+  }
+  .modal-bg {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 50;
+    display: flex; align-items: center; justify-content: center; padding: 24px;
+  }
+  .modal-bg.hidden { display: none; }
+  .modal {
+    background: var(--surface-1); border-radius: 16px; padding: 22px; max-width: 360px; width: 100%;
+  }
+  .modal h3 { font-size: 19px; margin-bottom: 10px; }
+  .modal p { font-size: 15px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 14px; }
+  .modal input {
+    width: 100%; font: inherit; font-size: 17px; padding: 11px 12px;
+    border: 1px solid var(--border); border-radius: 10px; margin-bottom: 14px;
+    background: var(--page); color: var(--text-primary);
+  }
+  .modal .row { display: flex; gap: 10px; }
+  .modal button {
+    flex: 1; font: inherit; font-size: 17px; font-weight: 700;
+    padding: 13px 0; border-radius: 12px; border: none; cursor: pointer;
+  }
+  .m-cancel { background: var(--gridline); color: var(--text-primary); }
+  .m-confirm { background: var(--critical); color: #fff; }
+  .m-confirm:disabled { opacity: 0.35; cursor: default; }
 </style>
 </head>
 <body class="viz-root" data-palette="#0ca30c,#d03b3b">
@@ -175,7 +201,6 @@
 <header class="card">
   <h1 id="t-title"></h1>
   <div class="sub" id="t-range"></div>
-  <div class="sub-en" id="t-subnote"></div>
   <div class="lang-toggle" role="group" aria-label="Language / 语言">
     <button id="btn-zh" onclick="setLang('zh')">中文</button>
     <button id="btn-en" onclick="setLang('en')">English</button>
@@ -190,11 +215,25 @@
 
 <a class="log-now" id="link-log" href="index.html"></a>
 
+<div class="loading" id="loading"></div>
+<div class="card hidden" id="error-card" style="text-align:center;">
+  <div class="empty-msg" id="error-msg"></div>
+  <button class="m-cancel" id="retry-btn" onclick="init()" style="font:inherit; font-weight:700; padding:12px 28px; border-radius:12px; border:none; cursor:pointer;"></button>
+</div>
+
+<div id="content" class="hidden">
+
+<div class="picker">
+  <button id="p-prev" onclick="stepAnchor(-1)">‹</button>
+  <div class="p-label" id="p-label"></div>
+  <button id="p-next" onclick="stepAnchor(1)">›</button>
+</div>
+
 <div class="stats stats-wrap">
   <div class="card">
     <div class="stat-label" id="s1-label"></div>
     <div class="stat-value" id="s1-value"></div>
-    <div class="stat-unit" id="s1-unit"></div>
+    <div class="stat-unit">mmol/L</div>
   </div>
   <div class="card">
     <div class="stat-label" id="s2-label"></div>
@@ -209,11 +248,6 @@
 </div>
 
 <section class="card">
-  <div class="day-picker hidden" id="daypicker">
-    <button id="dp-prev" onclick="stepDay(-1)">‹</button>
-    <div class="dp-label" id="dp-label"></div>
-    <button id="dp-next" onclick="stepDay(1)">›</button>
-  </div>
   <h2 id="t-chart-h"></h2>
   <div class="h2-note" id="t-chart-note"></div>
   <div class="legend">
@@ -256,135 +290,224 @@
 </section>
 
 <div class="note" id="t-note"></div>
+<button class="reset-link" id="reset-link" onclick="openReset()"></button>
+
+</div>
+
+<div class="modal-bg hidden" id="modal-bg">
+  <div class="modal">
+    <h3 id="m-title"></h3>
+    <p id="m-text"></p>
+    <input id="m-input" autocomplete="off" oninput="resetInputChanged()">
+    <div class="row">
+      <button class="m-cancel" id="m-cancel" onclick="closeReset()"></button>
+      <button class="m-confirm" id="m-confirm" onclick="doReset()" disabled></button>
+    </div>
+  </div>
+</div>
 
 <script>
-// ================= sample data =================
-// July 2026 (Jul 1 = Wednesday). day: day of month. type: 'fasting' (target <=7.0) | 'post' (2h after meal, <10.0)
-const readings = [
-  {day:1,  t:'07:20', type:'fasting', v:6.9}, {day:1,  t:'14:30', type:'post', v:9.2}, {day:1,  t:'20:45', type:'post', v:8.8},
-  {day:2,  t:'07:10', type:'fasting', v:7.2}, {day:2,  t:'20:50', type:'post', v:9.1},
-  /* Jul 3: no records (missed day) */
-  {day:4,  t:'08:00', type:'fasting', v:6.7}, {day:4,  t:'14:10', type:'post', v:9.9},
-  {day:5,  t:'07:50', type:'fasting', v:6.4}, {day:5,  t:'20:30', type:'post', v:10.8},
-  {day:6,  t:'07:15', type:'fasting', v:7.1}, {day:6,  t:'14:30', type:'post', v:8.6},
-  {day:7,  t:'07:05', type:'fasting', v:6.8}, {day:7,  t:'20:40', type:'post', v:8.9},
-  {day:8,  t:'07:20', type:'fasting', v:6.6}, {day:8,  t:'14:25', type:'post', v:9.5},
-  {day:9,  t:'07:10', type:'fasting', v:6.3}, {day:9,  t:'14:40', type:'post', v:10.3}, {day:9,  t:'21:00', type:'post', v:8.7},
-  {day:10, t:'07:25', type:'fasting', v:6.5}, {day:10, t:'20:45', type:'post', v:8.1},
-  {day:11, t:'07:45', type:'fasting', v:6.9}, {day:11, t:'14:15', type:'post', v:9.0},
-  {day:12, t:'07:30', type:'fasting', v:6.2}, {day:12, t:'20:35', type:'post', v:7.8},
-  {day:13, t:'07:15', type:'fasting', v:6.2}, {day:13, t:'14:30', type:'post', v:8.9},
-  {day:14, t:'07:00', type:'fasting', v:6.8}, {day:14, t:'14:40', type:'post', v:9.4}, {day:14, t:'21:00', type:'post', v:8.2},
-  {day:15, t:'07:20', type:'fasting', v:6.5}, {day:15, t:'21:10', type:'post', v:11.2, extreme:true},
-  {day:16, t:'07:05', type:'fasting', v:7.0}, {day:16, t:'14:35', type:'post', v:8.4},
-  {day:17, t:'07:10', type:'fasting', v:6.1}, {day:17, t:'20:50', type:'post', v:7.9},
-  {day:18, t:'07:40', type:'fasting', v:6.6}, {day:18, t:'14:20', type:'post', v:9.8},
-  {day:19, t:'07:30', type:'fasting', v:5.9}, {day:19, t:'20:40', type:'post', v:7.6},
-];
-const TODAY = 19, WEEK_START = 13, WEEK_END = 19, MONTH_DAYS = 31;
-const inRange = r => r.type === 'fasting' ? r.v <= 7.0 : r.v < 10.0;
-const wd = d => new Date(2026, 6, d).getDay();                 // 0=Sun
-const dayReadings = d => readings.filter(r => r.day === d);
-const loggedDays = [...new Set(readings.map(r => r.day))];
-const avg = a => a.reduce((s, r) => s + r.v, 0) / a.length;
+// ====== backend endpoint (same one the logging page posts to) ======
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbziaghYfMv1nmmnIdXfq_Xbg1wvgehk6Yx5KTZVn3uz3A8eBPTUYgfw1kcpF1BUKrxGeQ/exec';
 
 // ================= i18n =================
 const I18N = {
   zh: {
     title: '👴 爸爸的血糖记录',
-    subnote: 'Sample data 示范数据',
-    dowMonFirst: ['一','二','三','四','五','六','日'],
-    dow: d => ['日','一','二','三','四','五','六'][wd(d)],
-    dateShort: d => `7/${d}（${I18N.zh.dow(d)}）`,
-    dateLong: d => `2026年7月${d}日（${I18N.zh.dow(d)}）`,
-    rangeWeek: '2026年7月13日 – 7月19日（第 3 周）',
-    rangeMonth: '2026年7月（1日 – 19日）',
     viewDay: '日', viewWeek: '周', viewMonth: '月',
     logNow: '＋ 记血糖',
+    loading: '载入中… ⏳',
+    loadError: '载入数据失败，请检查网络再试一次',
+    retry: '重试',
+    dows: ['日','一','二','三','四','五','六'],
+    dowMonFirst: ['一','二','三','四','五','六','日'],
+    dateShort: d => `${d.getMonth()+1}/${d.getDate()}（${I18N.zh.dows[d.getDay()]}）`,
+    dateLong: d => `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日（${I18N.zh.dows[d.getDay()]}）`,
+    weekLabel: (a,b) => `${a.getMonth()+1}月${a.getDate()}日 – ${b.getMonth()+1}月${b.getDate()}日`,
+    monthLabel: d => `${d.getFullYear()}年${d.getMonth()+1}月`,
     avgLabel: '平均血糖', inrangeLabel: '达标次数', unitReadings: '次测量',
     logsToday: '当天记录', unitTimes: '次',
     daysLogged: '记录天数', unitDays: '天 ⭐',
-    chartHDay: '当天血糖', chartHWeek: '本周血糖走势', chartHMonth: '本月血糖（每日平均）',
+    chartHDay: '当天血糖', chartHWeek: '本周血糖走势', chartHMonth: '血糖（每日平均）',
     chartNote: '目标范围 4.0 – 10.0 mmol/L（空腹 ≤ 7.0）',
     chartNoteMonth: '每点为当天平均 · 红色 = 当天有偏高读数',
     legGood: '✓ 达标', legHigh: '! 偏高',
     fastGuide: '空腹目标 ≤ 7.0', bandLabel: '目标范围 4.0–10.0',
-    starH: '记录之星 ⭐', starNoteWeek: '每天有记录就得一颗星', starNoteMonth: '本月的星星月历',
-    starMsgWeek: n => `太棒了！本周 <span class="n">${n}</span> 天全勤 👏`,
-    starMsgMonth: (n, total) => `本月已记录 <span class="n">${n}</span>/${total} 天，只漏了 1 天，加油！`,
+    starH: '记录之星 ⭐', starNoteWeek: '每天有记录就得一颗星', starNoteMonth: '星星月历',
+    starMsgWeek: n => n > 0 ? `本周 <span class="n">${n}</span> 天有记录 👏` : '这周还没有记录，加油！',
+    starMsgMonth: (n, total) => `本月已记录 <span class="n">${n}</span>/${total} 天`,
     rewardH: '本周奖励 🎁',
-    rewardLine: n => `目标：一周 7 天都有记录 · 本周已记录 <b>${n}/7 天</b>`,
-    rewardHit: '✅ 达标！奖励：周末全家去饮茶 🍵',
+    rewardLine: n => `目标：一周 7 天都有记录 · 已记录 <b>${n}/7 天</b>`,
+    rewardHit: '✅ 达标！这周的奖励到手了 🎉',
     rewardMiss: n => `还差 ${7 - n} 天，继续加油！`,
     insightH: '本周小发现 💡',
-    insight: '7月15日聚餐（晚餐吃得比较丰盛）之后，血糖升到 <b>11.2</b>，是本周唯一一次偏高。其他日子都保持得很好 —— 尤其空腹血糖，一整周都在目标以内。继续保持！',
-    logH: '测量记录', logHMonth: '每日小结',
-    logCols: ['日期', '时间', '类型', '血糖', '状态'],
+    insightHigh: (dateStr, meal, foods, v) => `${dateStr}${meal}${foods ? `（${foods}）` : ''}后，血糖到了 <b>${v}</b>，是本周最高的一次。下次可以少吃一点试试看。`,
+    insightAllGood: '这周所有测量都在目标以内，非常棒！继续保持 👏',
+    insightNoData: '这周还没有血糖测量。记得饭前或饭后量一量哦。',
+    logH: '记录', logHMonth: '每日小结',
+    logCols: ['日期', '时间', '记录', '血糖', '状态'],
     logColsMonth: ['日期', '记录', '平均', '偏高'],
-    fasting: '空腹', post: '饭后2小时',
+    fasting: '空腹', post: '饭后2小时', reading: '血糖',
+    meals: {breakfast:'早餐', lunch:'午餐', snack:'点心', dinner:'晚餐', test:'测血糖'},
     ok: '✓ 达标', high: '! 偏高', none: '—',
     highCount: n => n === 0 ? '—' : `${n} 次`,
-    noRecords: '这一天没有记录',
-    note: '＊本页为示范数据，用来展示日报、周报、月报的样子',
-    extremeNote: '聚餐后',
+    noRecords: '这段时间没有记录',
+    noReadings: '这段时间没有血糖测量',
+    note: '数据来自记录表，实时更新',
+    resetLink: '🗑 清空所有数据 Reset all data',
+    mTitle: '⚠️ 清空所有数据？',
+    mText: '这会永久删除全部记录，无法复原。如果确定要清空，请在下面输入 RESET：',
+    mPlaceholder: '输入 RESET',
+    mCancel: '取消',
+    mConfirm: '清空',
+    resetDone: '已清空',
   },
   en: {
     title: "👴 Dad's Glucose Tracker",
-    subnote: 'Sample data 示范数据',
-    dowMonFirst: ['M','T','W','T','F','S','S'],
-    dow: d => ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][wd(d)],
-    dateShort: d => `${I18N.en.dow(d)} 7/${d}`,
-    dateLong: d => `${I18N.en.dow(d)}, Jul ${d}, 2026`,
-    rangeWeek: 'Jul 13 – Jul 19, 2026 (Week 3)',
-    rangeMonth: 'July 2026 (Jul 1 – 19)',
     viewDay: 'Daily', viewWeek: 'Weekly', viewMonth: 'Monthly',
     logNow: '＋ Log a reading',
+    loading: 'Loading… ⏳',
+    loadError: 'Could not load data — check the connection and try again',
+    retry: 'Retry',
+    dows: ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],
+    dowMonFirst: ['M','T','W','T','F','S','S'],
+    dateShort: d => `${I18N.en.dows[d.getDay()]} ${d.getMonth()+1}/${d.getDate()}`,
+    dateLong: d => `${I18N.en.dows[d.getDay()]}, ${d.toLocaleString('en', {month:'short'})} ${d.getDate()}, ${d.getFullYear()}`,
+    weekLabel: (a,b) => `${a.toLocaleString('en', {month:'short'})} ${a.getDate()} – ${b.toLocaleString('en', {month:'short'})} ${b.getDate()}`,
+    monthLabel: d => `${d.toLocaleString('en', {month:'long'})} ${d.getFullYear()}`,
     avgLabel: 'Average glucose', inrangeLabel: 'In range', unitReadings: 'readings',
     logsToday: 'Logs today', unitTimes: 'entries',
     daysLogged: 'Days logged', unitDays: 'days ⭐',
-    chartHDay: "The day's readings", chartHWeek: "This week's glucose trend", chartHMonth: 'Monthly glucose (daily averages)',
+    chartHDay: "The day's readings", chartHWeek: 'Glucose trend', chartHMonth: 'Glucose (daily averages)',
     chartNote: 'Target range 4.0 – 10.0 mmol/L (fasting ≤ 7.0)',
     chartNoteMonth: 'Each dot = daily average · red = a high reading that day',
     legGood: '✓ In range', legHigh: '! High',
     fastGuide: 'Fasting target ≤ 7.0', bandLabel: 'Target range 4.0–10.0',
-    starH: 'Star tracker ⭐', starNoteWeek: 'One star for every day with a log', starNoteMonth: 'Star calendar for the month',
-    starMsgWeek: n => `Amazing! <span class="n">${n}</span>/7 days this week 👏`,
-    starMsgMonth: (n, total) => `<span class="n">${n}</span>/${total} days logged this month — only 1 day missed. Keep going!`,
+    starH: 'Star tracker ⭐', starNoteWeek: 'One star for every day with a log', starNoteMonth: 'Star calendar',
+    starMsgWeek: n => n > 0 ? `<span class="n">${n}</span> day(s) logged this week 👏` : 'No logs yet this week — you can do it!',
+    starMsgMonth: (n, total) => `<span class="n">${n}</span>/${total} days logged this month`,
     rewardH: "This week's reward 🎁",
-    rewardLine: n => `Goal: log something every day · <b>${n}/7 days</b> this week`,
-    rewardHit: '✅ Goal met! Reward: family dim sum this weekend 🍵',
+    rewardLine: n => `Goal: log something every day · <b>${n}/7 days</b>`,
+    rewardHit: '✅ Goal met! Reward unlocked 🎉',
     rewardMiss: n => `${7 - n} more day(s) to go!`,
     insightH: 'Insight of the week 💡',
-    insight: 'After the big family dinner on Jul 15, glucose rose to <b>11.2</b> — the only high reading this week. Every other day stayed on track, especially fasting glucose, which was within target all week. Keep it up!',
-    logH: 'Readings log', logHMonth: 'Daily summary',
-    logCols: ['Date', 'Time', 'Type', 'Glucose', 'Status'],
+    insightHigh: (dateStr, meal, foods, v) => `After ${meal.toLowerCase()}${foods ? ` (${foods})` : ''} on ${dateStr}, glucose reached <b>${v}</b> — the highest this week. Worth trying a smaller portion next time.`,
+    insightAllGood: 'Every reading this week was within target — excellent! Keep it up 👏',
+    insightNoData: 'No glucose readings this week yet. Remember to test before or after meals.',
+    logH: 'Log', logHMonth: 'Daily summary',
+    logCols: ['Date', 'Time', 'Entry', 'Glucose', 'Status'],
     logColsMonth: ['Date', 'Logs', 'Avg', 'High'],
-    fasting: 'Fasting', post: '2h after meal',
+    fasting: 'Fasting', post: '2h after meal', reading: 'Reading',
+    meals: {breakfast:'Breakfast', lunch:'Lunch', snack:'Snack', dinner:'Dinner', test:'Glucose test'},
     ok: '✓ In range', high: '! High', none: '—',
     highCount: n => n === 0 ? '—' : `${n}×`,
-    noRecords: 'No records this day',
-    note: '* Sample data — a preview of the daily, weekly and monthly views',
-    extremeNote: 'family dinner',
+    noRecords: 'No records in this period',
+    noReadings: 'No glucose readings in this period',
+    note: 'Live data from the log sheet',
+    resetLink: '🗑 清空所有数据 Reset all data',
+    mTitle: '⚠️ Erase ALL data?',
+    mText: 'This permanently deletes every record and cannot be undone. If you are sure, type RESET below:',
+    mPlaceholder: 'Type RESET',
+    mCancel: 'Cancel',
+    mConfirm: 'Erase',
+    resetDone: 'All data erased',
   }
 };
-let lang = 'zh', view = 'week', dayIdx = TODAY;
+
+// ================= state & data =================
+let lang = 'zh', view = 'week';
+let anchor = new Date();            // the date the current view centres on
+let entries = [];                   // {t: Date, meal, foods, glu, timing}
+const $ = id => document.getElementById(id);
+const T = () => I18N[lang];
+
+const startOfDay = d => { const x = new Date(d); x.setHours(0,0,0,0); return x; };
+const addDays = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
+const mondayOf = d => addDays(startOfDay(d), -((d.getDay() + 6) % 7));
+const sameDay = (a, b) => a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+const today = () => startOfDay(new Date());
+const hhmm = d => `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+const avg = a => a.reduce((s, r) => s + r.glu, 0) / a.length;
+
+function inRange(r) {
+  if (r.timing === 'fasting') return r.glu <= 7.0;
+  return r.glu < 10.0;
+}
+function timingLabel(r) {
+  if (r.timing === 'fasting') return T().fasting;
+  if (r.timing === 'post') return T().post;
+  return T().reading;
+}
+function mealLabel(r) { return T().meals[r.meal] || r.meal || T().reading; }
+
+async function init() {
+  $('loading').classList.remove('hidden');
+  $('error-card').classList.add('hidden');
+  $('content').classList.add('hidden');
+  $('loading').textContent = T().loading;
+  try {
+    const res = await fetch(SCRIPT_URL + '?action=data');
+    const j = await res.json();
+    entries = (j.rows || []).map(r => {
+      const glu = parseFloat(r[3]);
+      return {
+        t: new Date(r[0]),
+        meal: String(r[1] || ''),
+        foods: String(r[2] || ''),
+        glu: isNaN(glu) ? null : glu,
+        timing: String(r[4] || ''),
+      };
+    }).filter(x => !isNaN(x.t.getTime())).sort((a, b) => a.t - b.t);
+    $('loading').classList.add('hidden');
+    $('content').classList.remove('hidden');
+    render();
+  } catch (err) {
+    $('loading').classList.add('hidden');
+    $('error-card').classList.remove('hidden');
+    $('error-msg').textContent = T().loadError;
+    $('retry-btn').textContent = T().retry;
+  }
+}
+
+// range of the current view: [start, end] inclusive days
+function viewRange() {
+  if (view === 'day') { const d = startOfDay(anchor); return [d, d]; }
+  if (view === 'week') { const m = mondayOf(anchor); return [m, addDays(m, 6)]; }
+  const f = new Date(anchor.getFullYear(), anchor.getMonth(), 1);
+  return [f, new Date(anchor.getFullYear(), anchor.getMonth() + 1, 0)];
+}
+function entriesIn(a, b) {
+  const end = addDays(b, 1);
+  return entries.filter(x => x.t >= a && x.t < end);
+}
+const readingsOf = list => list.filter(x => x.glu !== null);
+const daysWithLog = (a, b) => {
+  const s = new Set();
+  entriesIn(a, b).forEach(x => s.add(startOfDay(x.t).getTime()));
+  return s;
+};
+
+function stepAnchor(dir) {
+  if (view === 'day') anchor = addDays(anchor, dir);
+  else if (view === 'week') anchor = addDays(anchor, dir * 7);
+  else anchor = new Date(anchor.getFullYear(), anchor.getMonth() + dir, 1);
+  render();
+}
 
 // ================= chart plumbing =================
 const W = 520, H = 300, padL = 34, padR = 12, padT = 14, padB = 34;
 const yMin = 3, yMax = 13;
 const plotW = W - padL - padR, plotH = H - padT - padB;
-const yPos = v => padT + (yMax - v) / (yMax - yMin) * plotH;
+const yPosBase = v => padT + (yMax - Math.min(yMax, Math.max(yMin, v))) / (yMax - yMin) * plotH;
 const css = n => getComputedStyle(document.body).getPropertyValue(n).trim();
-const svg = document.getElementById('chart');
+const svg = $('chart');
 const NS = 'http://www.w3.org/2000/svg';
 const el = (tag, attrs) => {
   const e = document.createElementNS(NS, tag);
   for (const k in attrs) e.setAttribute(k, attrs[k]);
   return e;
 };
-const $ = id => document.getElementById(id);
 const tip = $('tip');
-
 function tipAt(cx, cy, html) {
   const rect = svg.getBoundingClientRect();
   tip.style.left = (cx / W * rect.width) + 'px';
@@ -393,30 +516,26 @@ function tipAt(cx, cy, html) {
   tip.style.display = 'block';
 }
 function hideTip() { tip.style.display = 'none'; }
-
-function chartBase(C) {
-  svg.innerHTML = '';
-  // target band + gridlines + fasting guide + baseline
-  svg.appendChild(el('rect', {x: padL, y: yPos(10), width: plotW, height: yPos(4) - yPos(10), fill: C.band}));
-  [4, 6, 8, 10, 12].forEach(v => {
-    svg.appendChild(el('line', {x1: padL, y1: yPos(v), x2: W - padR, y2: yPos(v), stroke: C.grid, 'stroke-width': 1}));
-    const t = el('text', {x: padL - 6, y: yPos(v) + 4, 'text-anchor': 'end', 'font-size': 12, fill: C.muted});
-    t.textContent = v; svg.appendChild(t);
-  });
-  svg.appendChild(el('line', {x1: padL, y1: yPos(7), x2: W - padR, y2: yPos(7), stroke: C.base, 'stroke-width': 1}));
-  const g7 = el('text', {x: padL + 6, y: yPos(7) + 14, 'font-size': 11, fill: C.muted});
-  g7.textContent = I18N[lang].fastGuide; svg.appendChild(g7);
-  const bl = el('text', {x: padL + 6, y: yPos(4) - 6, 'font-size': 11, fill: C.muted});
-  bl.textContent = I18N[lang].bandLabel; svg.appendChild(bl);
-  svg.appendChild(el('line', {x1: padL, y1: H - padB, x2: W - padR, y2: H - padB, stroke: C.base, 'stroke-width': 1}));
-}
-
 function colors() {
   return { grid: css('--gridline'), base: css('--baseline'), muted: css('--text-muted'),
     sec: css('--text-secondary'), good: css('--good'), crit: css('--critical'),
     surf: css('--surface-1'), conn: css('--connector'), band: css('--band') };
 }
-
+function chartBase(C) {
+  svg.innerHTML = '';
+  svg.appendChild(el('rect', {x: padL, y: yPosBase(10), width: plotW, height: yPosBase(4) - yPosBase(10), fill: C.band}));
+  [4, 6, 8, 10, 12].forEach(v => {
+    svg.appendChild(el('line', {x1: padL, y1: yPosBase(v), x2: W - padR, y2: yPosBase(v), stroke: C.grid, 'stroke-width': 1}));
+    const t = el('text', {x: padL - 6, y: yPosBase(v) + 4, 'text-anchor': 'end', 'font-size': 12, fill: C.muted});
+    t.textContent = v; svg.appendChild(t);
+  });
+  svg.appendChild(el('line', {x1: padL, y1: yPosBase(7), x2: W - padR, y2: yPosBase(7), stroke: C.base, 'stroke-width': 1}));
+  const g7 = el('text', {x: padL + 6, y: yPosBase(7) + 14, 'font-size': 11, fill: C.muted});
+  g7.textContent = T().fastGuide; svg.appendChild(g7);
+  const bl = el('text', {x: padL + 6, y: yPosBase(4) - 6, 'font-size': 11, fill: C.muted});
+  bl.textContent = T().bandLabel; svg.appendChild(bl);
+  svg.appendChild(el('line', {x1: padL, y1: H - padB, x2: W - padR, y2: H - padB, stroke: C.base, 'stroke-width': 1}));
+}
 function dotWithRing(cx, cy, color, C, hoverHtml) {
   svg.appendChild(el('circle', {cx, cy, r: 7, fill: C.surf}));
   svg.appendChild(el('circle', {cx, cy, r: 5, fill: color}));
@@ -426,232 +545,307 @@ function dotWithRing(cx, cy, color, C, hoverHtml) {
   hit.addEventListener('click', () => tipAt(cx, cy, hoverHtml));
   svg.appendChild(hit);
 }
+function emptyChart(C, msg) {
+  const t = el('text', {x: W / 2, y: H / 2, 'text-anchor': 'middle', 'font-size': 15, fill: C.muted});
+  t.textContent = msg; svg.appendChild(t);
+}
 
-const mins = t => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
-
-// ---- daily view: 24h axis ----
-function drawDay(C) {
-  const T = I18N[lang];
+function drawDay(C, a) {
   chartBase(C);
-  const data = dayReadings(dayIdx);
+  const data = readingsOf(entriesIn(a, a));
   [0, 6, 12, 18, 24].forEach(h => {
     const x = padL + h / 24 * plotW;
     const t = el('text', {x, y: H - padB + 18, 'text-anchor': h === 0 ? 'start' : h === 24 ? 'end' : 'middle', 'font-size': 12, fill: C.sec});
     t.textContent = `${String(h).padStart(2, '0')}:00`; svg.appendChild(t);
   });
-  if (!data.length) {
-    const t = el('text', {x: W / 2, y: H / 2, 'text-anchor': 'middle', 'font-size': 15, fill: C.muted});
-    t.textContent = T.noRecords; svg.appendChild(t);
-    return;
-  }
-  const xP = r => padL + mins(r.t) / 1440 * plotW;
+  if (!data.length) { emptyChart(C, T().noReadings); return; }
+  const xP = r => padL + (r.t.getHours() * 60 + r.t.getMinutes()) / 1440 * plotW;
   if (data.length > 1) {
-    const pts = data.map(r => `${xP(r).toFixed(1)},${yPos(r.v).toFixed(1)}`).join(' ');
+    const pts = data.map(r => `${xP(r).toFixed(1)},${yPosBase(r.glu).toFixed(1)}`).join(' ');
     svg.appendChild(el('polyline', {points: pts, fill: 'none', stroke: C.conn, 'stroke-width': 2, 'stroke-linejoin': 'round', 'stroke-linecap': 'round'}));
   }
   data.forEach(r => {
-    const cx = xP(r), cy = yPos(r.v);
+    const cx = xP(r), cy = yPosBase(r.glu);
     dotWithRing(cx, cy, inRange(r) ? C.good : C.crit, C,
-      `${r.t} · ${T[r.type]}<br><b>${r.v.toFixed(1)} mmol/L</b> ${inRange(r) ? T.ok : T.high}`);
+      `${hhmm(r.t)} · ${timingLabel(r)}<br><b>${r.glu.toFixed(1)} mmol/L</b> ${inRange(r) ? T().ok : T().high}`);
     const lb = el('text', {x: cx, y: cy - 14, 'text-anchor': 'middle', 'font-size': 13, 'font-weight': 700, fill: C.sec});
-    lb.textContent = r.v.toFixed(1); svg.appendChild(lb);
-    const tl = el('text', {x: cx, y: cy - 28, 'text-anchor': 'middle', 'font-size': 10, fill: C.muted});
-    tl.textContent = T[r.type]; svg.appendChild(tl);
+    lb.textContent = r.glu.toFixed(1); svg.appendChild(lb);
   });
 }
 
-// ---- weekly view ----
-function drawWeek(C) {
-  const T = I18N[lang];
+function drawWeek(C, a, b) {
   chartBase(C);
-  const data = readings.filter(r => r.day >= WEEK_START && r.day <= WEEK_END);
-  const xP = r => padL + ((r.day - WEEK_START) + 0.15 + mins(r.t) / 1440 * 0.7) / 7 * plotW;
-  for (let d = WEEK_START; d <= WEEK_END; d++) {
-    const cx = padL + (d - WEEK_START + 0.5) / 7 * plotW;
+  const data = readingsOf(entriesIn(a, b));
+  for (let i = 0; i < 7; i++) {
+    const d = addDays(a, i);
+    const cx = padL + (i + 0.5) / 7 * plotW;
     const t = el('text', {x: cx, y: H - padB + 18, 'text-anchor': 'middle', 'font-size': 12, fill: C.sec});
-    t.textContent = lang === 'zh' ? I18N.zh.dow(d) : I18N.en.dow(d); svg.appendChild(t);
+    t.textContent = T().dows[d.getDay()]; svg.appendChild(t);
     const dt = el('text', {x: cx, y: H - padB + 31, 'text-anchor': 'middle', 'font-size': 10, fill: C.muted});
-    dt.textContent = `7/${d}`; svg.appendChild(dt);
+    dt.textContent = `${d.getMonth()+1}/${d.getDate()}`; svg.appendChild(dt);
   }
-  const pts = data.map(r => `${xP(r).toFixed(1)},${yPos(r.v).toFixed(1)}`).join(' ');
-  svg.appendChild(el('polyline', {points: pts, fill: 'none', stroke: C.conn, 'stroke-width': 2, 'stroke-linejoin': 'round', 'stroke-linecap': 'round'}));
+  if (!data.length) { emptyChart(C, T().noReadings); return; }
+  const xP = r => {
+    const idx = Math.floor((startOfDay(r.t) - a) / 86400000);
+    const frac = (r.t.getHours() * 60 + r.t.getMinutes()) / 1440;
+    return padL + (idx + 0.15 + frac * 0.7) / 7 * plotW;
+  };
+  if (data.length > 1) {
+    const pts = data.map(r => `${xP(r).toFixed(1)},${yPosBase(r.glu).toFixed(1)}`).join(' ');
+    svg.appendChild(el('polyline', {points: pts, fill: 'none', stroke: C.conn, 'stroke-width': 2, 'stroke-linejoin': 'round', 'stroke-linecap': 'round'}));
+  }
   data.forEach(r => {
-    dotWithRing(xP(r), yPos(r.v), inRange(r) ? C.good : C.crit, C,
-      `${T.dateShort(r.day)} ${r.t}<br>${T[r.type]} · <b>${r.v.toFixed(1)} mmol/L</b> ${inRange(r) ? T.ok : T.high}`);
+    dotWithRing(xP(r), yPosBase(r.glu), inRange(r) ? C.good : C.crit, C,
+      `${T().dateShort(r.t)} ${hhmm(r.t)}<br>${timingLabel(r)} · <b>${r.glu.toFixed(1)} mmol/L</b> ${inRange(r) ? T().ok : T().high}`);
   });
-  const hi = data.reduce((a, b) => (b.v > a.v ? b : a));
-  const lb = el('text', {x: xP(hi), y: yPos(hi.v) - 12, 'text-anchor': 'middle', 'font-size': 13, 'font-weight': 700, fill: C.sec});
-  lb.textContent = `${hi.v.toFixed(1)} (${T.extremeNote})`; svg.appendChild(lb);
+  const hi = data.reduce((x, y) => (y.glu > x.glu ? y : x));
+  if (!inRange(hi)) {
+    const lb = el('text', {x: Math.min(W - padR - 30, Math.max(padL + 30, xP(hi))), y: Math.max(padT + 12, yPosBase(hi.glu) - 12), 'text-anchor': 'middle', 'font-size': 13, 'font-weight': 700, fill: C.sec});
+    lb.textContent = hi.glu.toFixed(1); svg.appendChild(lb);
+  }
 }
 
-// ---- monthly view: daily averages ----
-function drawMonth(C) {
-  const T = I18N[lang];
+function drawMonth(C, a, b) {
   chartBase(C);
-  const daily = loggedDays.map(d => {
-    const rs = dayReadings(d);
-    return {day: d, avg: avg(rs), n: rs.length, highs: rs.filter(r => !inRange(r)).length};
-  });
-  const xP = d => padL + (d - 0.5) / MONTH_DAYS * plotW;
-  [1, 5, 10, 15, 19, 25, 31].forEach(d => {
-    const t = el('text', {x: xP(d), y: H - padB + 18, 'text-anchor': 'middle', 'font-size': 12, fill: d <= TODAY ? C.sec : C.muted});
+  const nDays = b.getDate();
+  const daily = [];
+  for (let d = 1; d <= nDays; d++) {
+    const day = new Date(a.getFullYear(), a.getMonth(), d);
+    const rs = readingsOf(entriesIn(day, day));
+    if (rs.length) daily.push({day: d, avg: avg(rs), n: rs.length, highs: rs.filter(r => !inRange(r)).length, date: day});
+  }
+  const xP = d => padL + (d - 0.5) / nDays * plotW;
+  [1, 5, 10, 15, 20, 25, nDays].forEach(d => {
+    const t = el('text', {x: xP(d), y: H - padB + 18, 'text-anchor': 'middle', 'font-size': 12, fill: C.sec});
     t.textContent = d; svg.appendChild(t);
   });
-  const ml = el('text', {x: W - padR, y: H - padB + 31, 'text-anchor': 'end', 'font-size': 10, fill: C.muted});
-  ml.textContent = lang === 'zh' ? '2026年7月 · 日' : 'July 2026 · day of month'; svg.appendChild(ml);
-  const pts = daily.map(x => `${xP(x.day).toFixed(1)},${yPos(x.avg).toFixed(1)}`).join(' ');
-  svg.appendChild(el('polyline', {points: pts, fill: 'none', stroke: C.conn, 'stroke-width': 2, 'stroke-linejoin': 'round', 'stroke-linecap': 'round'}));
+  if (!daily.length) { emptyChart(C, T().noReadings); return; }
+  if (daily.length > 1) {
+    const pts = daily.map(x => `${xP(x.day).toFixed(1)},${yPosBase(x.avg).toFixed(1)}`).join(' ');
+    svg.appendChild(el('polyline', {points: pts, fill: 'none', stroke: C.conn, 'stroke-width': 2, 'stroke-linejoin': 'round', 'stroke-linecap': 'round'}));
+  }
   daily.forEach(x => {
-    dotWithRing(xP(x.day), yPos(x.avg), x.highs ? C.crit : C.good, C,
-      `${T.dateShort(x.day)}<br>${lang === 'zh' ? `${x.n} 次测量 · 平均` : `${x.n} readings · avg`} <b>${x.avg.toFixed(1)}</b><br>${lang === 'zh' ? `偏高 ${x.highs} 次` : `${x.highs} high`}`);
+    dotWithRing(xP(x.day), yPosBase(x.avg), x.highs ? C.crit : C.good, C,
+      `${T().dateShort(x.date)}<br>${lang === 'zh' ? `${x.n} 次测量 · 平均` : `${x.n} readings · avg`} <b>${x.avg.toFixed(1)}</b><br>${lang === 'zh' ? `偏高 ${x.highs} 次` : `${x.highs} high`}`);
   });
-  const worst = daily.reduce((a, b) => (b.avg > a.avg ? b : a));
-  const lb = el('text', {x: xP(worst.day), y: yPos(worst.avg) - 12, 'text-anchor': 'middle', 'font-size': 13, 'font-weight': 700, fill: C.sec});
-  lb.textContent = `7/${worst.day}: ${worst.avg.toFixed(1)}`; svg.appendChild(lb);
 }
 
 // ================= sections =================
-function renderStats() {
-  const T = I18N[lang];
-  let data, s3l, s3v, s3u;
+function renderStats(a, b) {
+  const list = entriesIn(a, b);
+  const rs = readingsOf(list);
+  const ok = rs.filter(inRange).length;
+  $('s1-label').textContent = T().avgLabel;
+  $('s1-value').textContent = rs.length ? avg(rs).toFixed(1) : T().none;
+  $('s2-label').textContent = T().inrangeLabel;
+  $('s2-value').innerHTML = rs.length ? `${ok}<span style="font-size:16px; color:var(--text-muted);">/${rs.length}</span>` : T().none;
+  $('s2-unit').textContent = T().unitReadings;
   if (view === 'day') {
-    data = dayReadings(dayIdx);
-    s3l = T.logsToday; s3v = String(data.length); s3u = T.unitTimes;
+    $('s3-label').textContent = T().logsToday;
+    $('s3-value').textContent = String(list.length);
+    $('s3-unit').textContent = T().unitTimes;
   } else if (view === 'week') {
-    data = readings.filter(r => r.day >= WEEK_START && r.day <= WEEK_END);
-    const days = new Set(data.map(r => r.day)).size;
-    s3l = T.daysLogged; s3v = `${days}<span style="font-size:16px; color:var(--text-muted);">/7</span>`; s3u = T.unitDays;
+    const n = daysWithLog(a, b).size;
+    $('s3-label').textContent = T().daysLogged;
+    $('s3-value').innerHTML = `${n}<span style="font-size:16px; color:var(--text-muted);">/7</span>`;
+    $('s3-unit').textContent = T().unitDays;
   } else {
-    data = readings;
-    s3l = T.daysLogged; s3v = `${loggedDays.length}<span style="font-size:16px; color:var(--text-muted);">/${TODAY}</span>`; s3u = T.unitDays;
+    const n = daysWithLog(a, b).size;
+    const now = today();
+    const denom = (a.getFullYear() === now.getFullYear() && a.getMonth() === now.getMonth()) ? now.getDate() : b.getDate();
+    $('s3-label').textContent = T().daysLogged;
+    $('s3-value').innerHTML = `${n}<span style="font-size:16px; color:var(--text-muted);">/${denom}</span>`;
+    $('s3-unit').textContent = T().unitDays;
   }
-  const ok = data.filter(inRange).length;
-  $('s1-label').textContent = T.avgLabel;
-  $('s1-value').textContent = data.length ? avg(data).toFixed(1) : T.none;
-  $('s1-unit').textContent = 'mmol/L';
-  $('s2-label').textContent = T.inrangeLabel;
-  $('s2-value').innerHTML = data.length ? `${ok}<span style="font-size:16px; color:var(--text-muted);">/${data.length}</span>` : T.none;
-  $('s2-unit').textContent = T.unitReadings;
-  $('s3-label').textContent = s3l; $('s3-value').innerHTML = s3v; $('s3-unit').textContent = s3u;
 }
 
-function renderStar() {
-  const T = I18N[lang];
+function renderStar(a, b) {
+  const logged = daysWithLog(a, b);
+  const now = today();
   if (view === 'week') {
     $('streakrow').classList.remove('hidden'); $('calgrid').classList.add('hidden');
-    $('t-star-note').textContent = T.starNoteWeek;
-    const days = [];
-    for (let d = WEEK_START; d <= WEEK_END; d++) days.push(d);
-    $('streakrow').innerHTML = days.map(d =>
-      `<div class="day-cell"><div class="dname">${T.dow(d)}</div><div class="star">${dayReadings(d).length ? '⭐' : ''}</div></div>`).join('');
-    const n = days.filter(d => dayReadings(d).length).length;
-    $('t-star-msg').innerHTML = T.starMsgWeek(n);
+    $('t-star-note').textContent = T().starNoteWeek;
+    let html = '';
+    for (let i = 0; i < 7; i++) {
+      const d = addDays(a, i);
+      const future = d > now;
+      const star = logged.has(d.getTime()) ? '⭐' : '';
+      html += `<div class="day-cell${future ? ' dim' : ''}"><div class="dname">${lang === 'zh' ? T().dowMonFirst[i] : T().dows[d.getDay()]}</div><div class="star">${star}</div></div>`;
+    }
+    $('streakrow').innerHTML = html;
+    $('t-star-msg').innerHTML = T().starMsgWeek(logged.size);
   } else {
     $('streakrow').classList.add('hidden'); $('calgrid').classList.remove('hidden');
-    $('t-star-note').textContent = T.starNoteMonth;
-    let cells = T.dowMonFirst.map(d => `<div class="cal-h">${d}</div>`).join('');
-    const offset = (wd(1) + 6) % 7;                       // Monday-first offset
+    $('t-star-note').textContent = T().starNoteMonth;
+    let cells = T().dowMonFirst.map(d => `<div class="cal-h">${d}</div>`).join('');
+    const offset = (a.getDay() + 6) % 7;
     for (let i = 0; i < offset; i++) cells += '<div class="cal-d empty"></div>';
-    for (let d = 1; d <= MONTH_DAYS; d++) {
-      if (d > TODAY) cells += `<div class="cal-d future">${d}</div>`;
-      else if (dayReadings(d).length) cells += `<div class="cal-d">${d}<div class="star">⭐</div></div>`;
+    for (let d = 1; d <= b.getDate(); d++) {
+      const day = new Date(a.getFullYear(), a.getMonth(), d);
+      if (day > now) cells += `<div class="cal-d future">${d}</div>`;
+      else if (logged.has(day.getTime())) cells += `<div class="cal-d">${d}<div class="star">⭐</div></div>`;
       else cells += `<div class="cal-d miss">${d}</div>`;
     }
     $('calgrid').innerHTML = cells;
-    $('t-star-msg').innerHTML = T.starMsgMonth(loggedDays.length, TODAY);
+    const denom = (a.getFullYear() === now.getFullYear() && a.getMonth() === now.getMonth()) ? now.getDate() : b.getDate();
+    $('t-star-msg').innerHTML = T().starMsgMonth(logged.size, denom);
   }
 }
 
-function renderReward() {
-  const T = I18N[lang];
-  const days = new Set(readings.filter(r => r.day >= WEEK_START && r.day <= WEEK_END).map(r => r.day)).size;
-  $('t-reward-h').innerHTML = T.rewardH;
-  $('t-reward-line').innerHTML = T.rewardLine(days);
-  $('reward-fill').style.width = Math.min(100, days / 7 * 100) + '%';
-  $('t-reward-hit').innerHTML = days >= 7 ? T.rewardHit : T.rewardMiss(days);
+function renderReward(a, b) {
+  const n = daysWithLog(a, b).size;
+  $('t-reward-h').innerHTML = T().rewardH;
+  $('t-reward-line').innerHTML = T().rewardLine(n);
+  $('reward-fill').style.width = Math.min(100, n / 7 * 100) + '%';
+  $('t-reward-hit').innerHTML = n >= 7 ? T().rewardHit : T().rewardMiss(n);
 }
 
-function renderTable() {
-  const T = I18N[lang];
+function renderInsight(a, b) {
+  const rs = readingsOf(entriesIn(a, b));
+  $('t-insight-h').textContent = T().insightH;
+  if (!rs.length) { $('t-insight').innerHTML = T().insightNoData; return; }
+  const highs = rs.filter(r => !inRange(r));
+  if (!highs.length) { $('t-insight').innerHTML = T().insightAllGood; return; }
+  const hi = highs.reduce((x, y) => (y.glu > x.glu ? y : x));
+  // find the meal logged closest before this reading on the same day
+  const sameDayMeals = entries.filter(x => sameDay(x.t, hi.t) && x.meal && x.meal !== 'test' && x.t <= hi.t);
+  const mealE = sameDayMeals.length ? sameDayMeals[sameDayMeals.length - 1] : (hi.meal && hi.meal !== 'test' ? hi : null);
+  const mealName = mealE ? (T().meals[mealE.meal] || '') : '';
+  const foods = mealE ? mealE.foods : '';
+  $('t-insight').innerHTML = T().insightHigh(T().dateShort(hi.t), mealName || timingLabel(hi), foods, hi.glu.toFixed(1));
+}
+
+function renderTable(a, b) {
   const head = $('loghead'), body = $('logbody'), empty = $('log-empty');
   empty.classList.add('hidden');
   if (view === 'month') {
-    $('t-log-h').textContent = T.logHMonth;
-    head.innerHTML = T.logColsMonth.map(c => `<th>${c}</th>`).join('');
-    body.innerHTML = loggedDays.map(d => {
-      const rs = dayReadings(d), highs = rs.filter(r => !inRange(r)).length;
-      return `<tr><td>${T.dateShort(d)}</td><td>${rs.length}</td><td class="num">${avg(rs).toFixed(1)}</td>` +
-        `<td class="${highs ? 'flag-high' : ''}">${T.highCount(highs)}</td></tr>`;
-    }).join('');
+    $('t-log-h').textContent = T().logHMonth;
+    head.innerHTML = T().logColsMonth.map(c => `<th>${c}</th>`).join('');
+    const rows = [];
+    for (let d = 1; d <= b.getDate(); d++) {
+      const day = new Date(a.getFullYear(), a.getMonth(), d);
+      const list = entriesIn(day, day);
+      if (!list.length) continue;
+      const rs = readingsOf(list);
+      const highs = rs.filter(r => !inRange(r)).length;
+      rows.push(`<tr><td>${T().dateShort(day)}</td><td>${list.length}</td>` +
+        `<td class="num">${rs.length ? avg(rs).toFixed(1) : T().none}</td>` +
+        `<td class="${highs ? 'flag-high' : ''}">${T().highCount(highs)}</td></tr>`);
+    }
+    body.innerHTML = rows.join('');
+    if (!rows.length) { empty.textContent = T().noRecords; empty.classList.remove('hidden'); }
     return;
   }
-  $('t-log-h').textContent = T.logH;
-  head.innerHTML = T.logCols.map(c => `<th>${c}</th>`).join('');
-  const data = view === 'day' ? dayReadings(dayIdx)
-    : readings.filter(r => r.day >= WEEK_START && r.day <= WEEK_END);
-  body.innerHTML = data.map(r => {
+  $('t-log-h').textContent = T().logH;
+  head.innerHTML = T().logCols.map(c => `<th>${c}</th>`).join('');
+  const list = entriesIn(a, b);
+  body.innerHTML = list.map(r => {
+    const what = mealLabel(r) + (r.foods ? ` · ${r.foods}` : '');
+    if (r.glu === null) {
+      return `<tr><td>${T().dateShort(r.t)}</td><td>${hhmm(r.t)}</td><td class="what">${what}</td><td class="num">${T().none}</td><td></td></tr>`;
+    }
     const ok = inRange(r);
-    return `<tr><td>${T.dateShort(r.day)}</td><td>${r.t}</td><td>${T[r.type]}</td>` +
-      `<td class="num">${r.v.toFixed(1)}</td>` +
-      `<td class="${ok ? 'flag-good' : 'flag-high'}">${ok ? T.ok : T.high}</td></tr>`;
+    return `<tr><td>${T().dateShort(r.t)}</td><td>${hhmm(r.t)}</td><td class="what">${what}</td>` +
+      `<td class="num">${r.glu.toFixed(1)}</td>` +
+      `<td class="${ok ? 'flag-good' : 'flag-high'}">${ok ? T().ok : T().high}</td></tr>`;
   }).join('');
-  if (!data.length) { empty.textContent = T.noRecords; empty.classList.remove('hidden'); }
+  if (!list.length) { empty.textContent = T().noRecords; empty.classList.remove('hidden'); }
 }
 
 // ================= master render =================
 function render() {
-  const T = I18N[lang];
+  const t = T();
   document.documentElement.lang = lang === 'zh' ? 'zh-Hans' : 'en';
   $('btn-zh').classList.toggle('active', lang === 'zh');
   $('btn-en').classList.toggle('active', lang === 'en');
   ['day', 'week', 'month'].forEach(v => $('btn-' + v).classList.toggle('active', view === v));
-  $('btn-day').textContent = T.viewDay; $('btn-week').textContent = T.viewWeek; $('btn-month').textContent = T.viewMonth;
-  $('link-log').textContent = T.logNow;
+  $('btn-day').textContent = t.viewDay; $('btn-week').textContent = t.viewWeek; $('btn-month').textContent = t.viewMonth;
+  $('t-title').textContent = t.title;
+  $('link-log').textContent = t.logNow;
+  $('t-leg-good').textContent = t.legGood; $('t-leg-high').textContent = t.legHigh;
+  $('t-note').textContent = t.note;
+  $('reset-link').textContent = t.resetLink;
 
-  $('t-title').textContent = T.title;
-  $('t-subnote').textContent = T.subnote;
-  $('t-range').textContent = view === 'day' ? T.dateLong(dayIdx) : view === 'week' ? T.rangeWeek : T.rangeMonth;
-  $('t-leg-good').textContent = T.legGood; $('t-leg-high').textContent = T.legHigh;
-  $('t-note').textContent = T.note;
+  const [a, b] = viewRange();
+  const now = today();
 
-  // day picker
-  $('daypicker').classList.toggle('hidden', view !== 'day');
-  if (view === 'day') {
-    $('dp-label').textContent = T.dateShort(dayIdx);
-    $('dp-prev').disabled = dayIdx <= 1;
-    $('dp-next').disabled = dayIdx >= TODAY;
-  }
+  if (view === 'day') { $('t-range').textContent = t.dateLong(a); $('p-label').textContent = t.dateShort(a); }
+  else if (view === 'week') { $('t-range').textContent = t.weekLabel(a, b); $('p-label').textContent = t.weekLabel(a, b); }
+  else { $('t-range').textContent = t.monthLabel(a); $('p-label').textContent = t.monthLabel(a); }
+  $('p-next').disabled = view === 'day' ? (sameDay(a, now) || a > now)
+    : view === 'week' ? addDays(a, 7) > now
+    : new Date(a.getFullYear(), a.getMonth() + 1, 1) > now;
 
-  // chart
-  $('t-chart-h').textContent = view === 'day' ? T.chartHDay : view === 'week' ? T.chartHWeek : T.chartHMonth;
-  $('t-chart-note').textContent = view === 'month' ? T.chartNoteMonth : T.chartNote;
+  $('t-chart-h').textContent = view === 'day' ? t.chartHDay : view === 'week' ? t.chartHWeek : t.chartHMonth;
+  $('t-chart-note').textContent = view === 'month' ? t.chartNoteMonth : t.chartNote;
   hideTip();
-  const C = colors();
-  if (view === 'day') drawDay(C); else if (view === 'week') drawWeek(C); else drawMonth(C);
-
-  // cards
-  $('card-star').classList.toggle('hidden', view === 'day');
-  $('card-reward').classList.toggle('hidden', view !== 'week');
-  $('card-insight').classList.toggle('hidden', view !== 'week');
-  $('t-star-h').textContent = I18N[lang].starH;
-  if (view !== 'day') renderStar();
-  if (view === 'week') { renderReward(); $('t-insight-h').textContent = T.insightH; $('t-insight').innerHTML = T.insight; }
-
-  renderStats();
-  renderTable();
+  if (!$('content').classList.contains('hidden')) {
+    const C = colors();
+    if (view === 'day') drawDay(C, a); else if (view === 'week') drawWeek(C, a, b); else drawMonth(C, a, b);
+    $('card-star').classList.toggle('hidden', view === 'day');
+    $('card-reward').classList.toggle('hidden', view !== 'week');
+    $('card-insight').classList.toggle('hidden', view !== 'week');
+    $('t-star-h').textContent = t.starH;
+    if (view !== 'day') renderStar(a, b);
+    if (view === 'week') { renderReward(a, b); renderInsight(a, b); }
+    renderStats(a, b);
+    renderTable(a, b);
+  }
 }
 
-function setLang(l) { lang = l; render(); }
-function setView(v) { view = v; render(); }
-function stepDay(dir) {
-  let d = dayIdx + dir;
-  while (d >= 1 && d <= TODAY && false) d += dir;   // all days selectable, incl. missed
-  dayIdx = Math.max(1, Math.min(TODAY, d));
+function setLang(l) {
+  lang = l;
+  if ($('content').classList.contains('hidden') && $('error-card').classList.contains('hidden')) {
+    $('loading').textContent = T().loading;
+  }
+  if (!$('error-card').classList.contains('hidden')) {
+    $('error-msg').textContent = T().loadError;
+    $('retry-btn').textContent = T().retry;
+  }
   render();
 }
+function setView(v) { view = v; anchor = new Date(); render(); }
 
-render();
-if (window.matchMedia) window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', render);
+// ================= reset (guarded) =================
+function openReset() {
+  const t = T();
+  $('m-title').textContent = t.mTitle;
+  $('m-text').textContent = t.mText;
+  $('m-input').value = '';
+  $('m-input').placeholder = t.mPlaceholder;
+  $('m-cancel').textContent = t.mCancel;
+  $('m-confirm').textContent = t.mConfirm;
+  $('m-confirm').disabled = true;
+  $('modal-bg').classList.remove('hidden');
+}
+function closeReset() { $('modal-bg').classList.add('hidden'); }
+function resetInputChanged() {
+  $('m-confirm').disabled = $('m-input').value.trim().toUpperCase() !== 'RESET';
+}
+async function doReset() {
+  if ($('m-input').value.trim().toUpperCase() !== 'RESET') return;
+  $('m-confirm').disabled = true;
+  $('m-confirm').textContent = '…';
+  try {
+    await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors',
+      body: new URLSearchParams({ action: 'reset', confirm: 'RESET' }) });
+  } catch (e) { /* no-cors response is opaque either way */ }
+  await new Promise(r => setTimeout(r, 1500));
+  closeReset();
+  alertMsg(T().resetDone);
+  init();
+}
+function alertMsg(msg) {
+  const n = document.createElement('div');
+  n.textContent = msg;
+  n.style.cssText = 'position:fixed;top:18px;left:50%;transform:translateX(-50%);background:var(--text-primary);color:var(--surface-1);padding:10px 22px;border-radius:999px;font-size:15px;font-weight:600;z-index:99;';
+  document.body.appendChild(n);
+  setTimeout(() => n.remove(), 2500);
+}
+
+render();       // paint chrome instantly (labels, toggles)
+init();         // then load live data
+if (window.matchMedia) window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { if (!$('content').classList.contains('hidden')) render(); });
 </script>
 </body>
 </html>
