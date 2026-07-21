@@ -331,7 +331,7 @@ const I18N = {
     chartHDay: '当天血糖', chartHWeek: '本周血糖走势', chartHMonth: '血糖（每日平均）',
     chartNote: '目标范围 4.0 – 10.0 mmol/L（空腹 ≤ 7.0）',
     chartNoteMonth: '每点为当天平均 · 红色 = 当天有偏高读数',
-    legGood: '✓ 达标', legHigh: '! 偏高',
+    legGood: '✓ 达标', legHigh: '! 偏高 / 偏低',
     fastGuide: '空腹目标 ≤ 7.0', bandLabel: '目标范围 4.0–10.0',
     starH: '记录之星 ⭐', starNoteWeek: '每天有记录就得一颗星', starNoteMonth: '星星月历',
     starMsgWeek: n => n > 0 ? `本周 <span class="n">${n}</span> 天有记录 👏` : '这周还没有记录，加油！',
@@ -346,10 +346,10 @@ const I18N = {
     insightNoData: '这周还没有血糖测量。记得饭前或饭后量一量哦。',
     logH: '记录', logHMonth: '每日小结',
     logCols: ['日期', '时间', '记录', '血糖', '状态'],
-    logColsMonth: ['日期', '记录', '平均', '偏高'],
+    logColsMonth: ['日期', '记录', '平均', '异常'],
     fasting: '空腹', post: '饭后2小时', reading: '血糖',
     meals: {breakfast:'早餐', lunch:'午餐', snack:'点心', dinner:'晚餐', test:'测血糖'},
-    ok: '✓ 达标', high: '! 偏高', none: '—',
+    ok: '✓ 达标', high: '! 偏高', low: '! 偏低', none: '—',
     highCount: n => n === 0 ? '—' : `${n} 次`,
     noRecords: '这段时间没有记录',
     noReadings: '这段时间没有血糖测量',
@@ -381,7 +381,7 @@ const I18N = {
     chartHDay: "The day's readings", chartHWeek: 'Glucose trend', chartHMonth: 'Glucose (daily averages)',
     chartNote: 'Target range 4.0 – 10.0 mmol/L (fasting ≤ 7.0)',
     chartNoteMonth: 'Each dot = daily average · red = a high reading that day',
-    legGood: '✓ In range', legHigh: '! High',
+    legGood: '✓ In range', legHigh: '! High / Low',
     fastGuide: 'Fasting target ≤ 7.0', bandLabel: 'Target range 4.0–10.0',
     starH: 'Star tracker ⭐', starNoteWeek: 'One star for every day with a log', starNoteMonth: 'Star calendar',
     starMsgWeek: n => n > 0 ? `<span class="n">${n}</span> day(s) logged this week 👏` : 'No logs yet this week — you can do it!',
@@ -396,10 +396,10 @@ const I18N = {
     insightNoData: 'No glucose readings this week yet. Remember to test before or after meals.',
     logH: 'Log', logHMonth: 'Daily summary',
     logCols: ['Date', 'Time', 'Entry', 'Glucose', 'Status'],
-    logColsMonth: ['Date', 'Logs', 'Avg', 'High'],
+    logColsMonth: ['Date', 'Logs', 'Avg', 'Flagged'],
     fasting: 'Fasting', post: '2h after meal', reading: 'Reading',
     meals: {breakfast:'Breakfast', lunch:'Lunch', snack:'Snack', dinner:'Dinner', test:'Glucose test'},
-    ok: '✓ In range', high: '! High', none: '—',
+    ok: '✓ In range', high: '! High', low: '! Low', none: '—',
     highCount: n => n === 0 ? '—' : `${n}×`,
     noRecords: 'No records in this period',
     noReadings: 'No glucose readings in this period',
@@ -429,10 +429,10 @@ const today = () => startOfDay(new Date());
 const hhmm = d => `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
 const avg = a => a.reduce((s, r) => s + r.glu, 0) / a.length;
 
-function inRange(r) {
-  if (r.timing === 'fasting') return r.glu <= 7.0;
-  return r.glu < 10.0;
-}
+function isHigh(r) { return r.timing === 'fasting' ? r.glu > 7.0 : r.glu >= 10.0; }
+function isLow(r) { return r.glu < 4.0; }
+function inRange(r) { return !isHigh(r) && !isLow(r); }
+function statusLabel(r) { return isLow(r) ? T().low : isHigh(r) ? T().high : T().ok; }
 function timingLabel(r) {
   if (r.timing === 'fasting') return T().fasting;
   if (r.timing === 'post') return T().post;
@@ -567,7 +567,7 @@ function drawDay(C, a) {
   data.forEach(r => {
     const cx = xP(r), cy = yPosBase(r.glu);
     dotWithRing(cx, cy, inRange(r) ? C.good : C.crit, C,
-      `${hhmm(r.t)} · ${timingLabel(r)}<br><b>${r.glu.toFixed(1)} mmol/L</b> ${inRange(r) ? T().ok : T().high}`);
+      `${hhmm(r.t)} · ${timingLabel(r)}<br><b>${r.glu.toFixed(1)} mmol/L</b> ${statusLabel(r)}`);
     const lb = el('text', {x: cx, y: cy - 14, 'text-anchor': 'middle', 'font-size': 13, 'font-weight': 700, fill: C.sec});
     lb.textContent = r.glu.toFixed(1); svg.appendChild(lb);
   });
@@ -596,7 +596,7 @@ function drawWeek(C, a, b) {
   }
   data.forEach(r => {
     dotWithRing(xP(r), yPosBase(r.glu), inRange(r) ? C.good : C.crit, C,
-      `${T().dateShort(r.t)} ${hhmm(r.t)}<br>${timingLabel(r)} · <b>${r.glu.toFixed(1)} mmol/L</b> ${inRange(r) ? T().ok : T().high}`);
+      `${T().dateShort(r.t)} ${hhmm(r.t)}<br>${timingLabel(r)} · <b>${r.glu.toFixed(1)} mmol/L</b> ${statusLabel(r)}`);
   });
   const hi = data.reduce((x, y) => (y.glu > x.glu ? y : x));
   if (!inRange(hi)) {
@@ -704,7 +704,7 @@ function renderInsight(a, b) {
   const rs = readingsOf(entriesIn(a, b));
   $('t-insight-h').textContent = T().insightH;
   if (!rs.length) { $('t-insight').innerHTML = T().insightNoData; return; }
-  const highs = rs.filter(r => !inRange(r));
+  const highs = rs.filter(isHigh);
   if (!highs.length) { $('t-insight').innerHTML = T().insightAllGood; return; }
   const hi = highs.reduce((x, y) => (y.glu > x.glu ? y : x));
   // find the meal logged closest before this reading on the same day
@@ -747,7 +747,7 @@ function renderTable(a, b) {
     const ok = inRange(r);
     return `<tr><td>${T().dateShort(r.t)}</td><td>${hhmm(r.t)}</td><td class="what">${what}</td>` +
       `<td class="num">${r.glu.toFixed(1)}</td>` +
-      `<td class="${ok ? 'flag-good' : 'flag-high'}">${ok ? T().ok : T().high}</td></tr>`;
+      `<td class="${ok ? 'flag-good' : 'flag-high'}">${statusLabel(r)}</td></tr>`;
   }).join('');
   if (!list.length) { empty.textContent = T().noRecords; empty.classList.remove('hidden'); }
 }
