@@ -121,6 +121,7 @@
   .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
 
   .chart-wrap { position: relative; }
+  .panel-h { font-size: 14px; font-weight: 700; color: var(--text-secondary); margin: 12px 0 4px; }
   svg { display: block; width: 100%; height: auto; }
   .tooltip {
     position: absolute; pointer-events: none; display: none;
@@ -258,9 +259,15 @@
     <span><span class="dot" style="background:var(--good)"></span><span id="t-leg-good"></span></span>
     <span><span class="dot" style="background:var(--critical)"></span><span id="t-leg-high"></span></span>
   </div>
+  <div class="panel-h" id="ph-fast" style="margin-top:0"></div>
   <div class="chart-wrap">
-    <svg id="chart" viewBox="0 0 520 300" role="img" aria-label="Glucose chart"></svg>
-    <div class="tooltip" id="tip"></div>
+    <svg id="chart-fast" viewBox="0 0 520 240" role="img" aria-label="Fasting glucose chart"></svg>
+    <div class="tooltip" id="tip-fast"></div>
+  </div>
+  <div class="panel-h" id="ph-post"></div>
+  <div class="chart-wrap">
+    <svg id="chart-post" viewBox="0 0 520 240" role="img" aria-label="Post-meal glucose chart"></svg>
+    <div class="tooltip" id="tip-post"></div>
   </div>
 </section>
 
@@ -333,10 +340,10 @@ const I18N = {
     logsToday: '当天记录', unitTimes: '次',
     daysLogged: '记录天数', unitDays: '天 ⭐',
     chartHDay: '当天血糖', chartHWeek: '本周血糖走势', chartHMonth: '血糖（每日平均）',
-    chartNote: '健康范围 4.0 – 10.0 mmol/L（空腹 ≤ 7.0）',
+    chartNote: '空腹和饭后的标准不同，分开显示（mmol/L）',
     chartNoteMonth: '每点为当天平均 · 红色 = 当天有偏高读数',
     legGood: '✓ 达标', legHigh: '! 偏高 / 偏低',
-    fastGuide: '空腹目标 ≤ 7.0', bandLabel: '💚 健康范围 4.0–10.0',
+    bandWord: '目标', panelFast: '🌄 空腹 / 饭前（目标 4.0 – 7.0）', panelPost: '🍚 饭后 2 小时（目标 4.0 – 10.0）', noMeas: '没有测量',
     starH: '记录之星 ⭐', starNoteWeek: '每天有记录得一颗星 · 绿框＝当天血糖全部达标 💚', starNoteMonth: '星星月历 · 绿框＝当天全部达标 💚',
     starMsgWeek: n => n > 0 ? `本周 <span class="n">${n}</span> 天有记录 👏` : '这周还没有记录，加油！',
     starMsgMonth: (n, total) => `本月已记录 <span class="n">${n}</span>/${total} 天`,
@@ -383,10 +390,10 @@ const I18N = {
     logsToday: 'Logs today', unitTimes: 'entries',
     daysLogged: 'Days logged', unitDays: 'days ⭐',
     chartHDay: "The day's readings", chartHWeek: 'Glucose trend', chartHMonth: 'Glucose (daily averages)',
-    chartNote: 'Healthy range 4.0 – 10.0 mmol/L (fasting ≤ 7.0)',
+    chartNote: 'Fasting and after-meal targets differ — shown separately (mmol/L)',
     chartNoteMonth: 'Each dot = daily average · red = a high reading that day',
     legGood: '✓ In range', legHigh: '! High / Low',
-    fastGuide: 'Fasting target ≤ 7.0', bandLabel: '💚 Healthy zone 4.0–10.0',
+    bandWord: 'target', panelFast: '🌄 Fasting / before meals (target 4.0 – 7.0)', panelPost: '🍚 2h after meals (target 4.0 – 10.0)', noMeas: 'No readings',
     starH: 'Star tracker ⭐', starNoteWeek: 'A star for each day logged · green ring = all readings in range 💚', starNoteMonth: 'Star calendar · green ring = all in range 💚',
     starMsgWeek: n => n > 0 ? `<span class="n">${n}</span> day(s) logged this week 👏` : 'No logs yet this week — you can do it!',
     starMsgMonth: (n, total) => `<span class="n">${n}</span>/${total} days logged this month`,
@@ -499,138 +506,154 @@ function stepAnchor(dir) {
 }
 
 // ================= chart plumbing =================
-const W = 520, H = 300, padL = 34, padR = 12, padT = 14, padB = 34;
-const yMin = 3, yMax = 13;
+const W = 520, H = 240, padL = 34, padR = 12, padT = 12, padB = 30;
+const yMin = 3;
 const plotW = W - padL - padR, plotH = H - padT - padB;
-const yPosBase = v => padT + (yMax - Math.min(yMax, Math.max(yMin, v))) / (yMax - yMin) * plotH;
 const css = n => getComputedStyle(document.body).getPropertyValue(n).trim();
-const svg = $('chart');
 const NS = 'http://www.w3.org/2000/svg';
 const el = (tag, attrs) => {
   const e = document.createElementNS(NS, tag);
   for (const k in attrs) e.setAttribute(k, attrs[k]);
   return e;
 };
-const tip = $('tip');
-function tipAt(cx, cy, html) {
-  const rect = svg.getBoundingClientRect();
-  tip.style.left = (cx / W * rect.width) + 'px';
-  tip.style.top = (cy / H * rect.height) + 'px';
-  tip.innerHTML = html;
-  tip.style.display = 'block';
+const PANELS = [
+  { key: 'fasting', svgId: 'chart-fast', tipId: 'tip-fast', yMax: 10, band: [4, 7] },
+  { key: 'post', svgId: 'chart-post', tipId: 'tip-post', yMax: 13, band: [4, 10] },
+];
+const readingsFor = (key, list) => key === 'fasting'
+  ? list.filter(r => r.timing === 'fasting')
+  : list.filter(r => r.timing !== 'fasting');
+function ctxOf(p) { return { svg: $(p.svgId), tip: $(p.tipId), yMax: p.yMax, band: p.band }; }
+function yPos(ctx, v) {
+  const c = Math.min(ctx.yMax, Math.max(yMin, v));
+  return padT + (ctx.yMax - c) / (ctx.yMax - yMin) * plotH;
 }
-function hideTip() { tip.style.display = 'none'; }
+function tipAt(ctx, cx, cy, html) {
+  const rect = ctx.svg.getBoundingClientRect();
+  ctx.tip.style.left = (cx / W * rect.width) + 'px';
+  ctx.tip.style.top = (cy / H * rect.height) + 'px';
+  ctx.tip.innerHTML = html;
+  ctx.tip.style.display = 'block';
+}
+function hideTips() { ['tip-fast', 'tip-post'].forEach(id => { const e = $(id); if (e) e.style.display = 'none'; }); }
 function colors() {
   return { grid: css('--gridline'), base: css('--baseline'), muted: css('--text-muted'),
     sec: css('--text-secondary'), good: css('--good'), crit: css('--critical'),
     surf: css('--surface-1'), conn: css('--connector'), band: css('--band') };
 }
-function chartBase(C) {
-  svg.innerHTML = '';
-  svg.appendChild(el('rect', {x: padL, y: yPosBase(10), width: plotW, height: yPosBase(4) - yPosBase(10), fill: C.band}));
-  [4, 6, 8, 10, 12].forEach(v => {
-    svg.appendChild(el('line', {x1: padL, y1: yPosBase(v), x2: W - padR, y2: yPosBase(v), stroke: C.grid, 'stroke-width': 1}));
-    const t = el('text', {x: padL - 6, y: yPosBase(v) + 4, 'text-anchor': 'end', 'font-size': 12, fill: C.muted});
-    t.textContent = v; svg.appendChild(t);
-  });
-  svg.appendChild(el('line', {x1: padL, y1: yPosBase(7), x2: W - padR, y2: yPosBase(7), stroke: C.base, 'stroke-width': 1}));
-  const g7 = el('text', {x: padL + 6, y: yPosBase(7) + 14, 'font-size': 11, fill: C.muted});
-  g7.textContent = T().fastGuide; svg.appendChild(g7);
-  const bl = el('text', {x: padL + 6, y: yPosBase(4) - 6, 'font-size': 11, fill: C.muted});
-  bl.textContent = T().bandLabel; svg.appendChild(bl);
-  svg.appendChild(el('line', {x1: padL, y1: H - padB, x2: W - padR, y2: H - padB, stroke: C.base, 'stroke-width': 1}));
+function chartBase(ctx, C) {
+  ctx.svg.innerHTML = '';
+  ctx.svg.appendChild(el('rect', {x: padL, y: yPos(ctx, ctx.band[1]), width: plotW, height: yPos(ctx, ctx.band[0]) - yPos(ctx, ctx.band[1]), fill: C.band}));
+  for (let v = 4; v <= ctx.yMax; v += 2) {
+    ctx.svg.appendChild(el('line', {x1: padL, y1: yPos(ctx, v), x2: W - padR, y2: yPos(ctx, v), stroke: C.grid, 'stroke-width': 1}));
+    const t = el('text', {x: padL - 6, y: yPos(ctx, v) + 4, 'text-anchor': 'end', 'font-size': 12, fill: C.muted});
+    t.textContent = v; ctx.svg.appendChild(t);
+  }
+  const bl = el('text', {x: padL + 6, y: yPos(ctx, ctx.band[0]) - 6, 'font-size': 11, fill: C.muted});
+  bl.textContent = `💚 ${T().bandWord} ${ctx.band[0].toFixed(1)}–${ctx.band[1].toFixed(1)}`;
+  ctx.svg.appendChild(bl);
+  ctx.svg.appendChild(el('line', {x1: padL, y1: H - padB, x2: W - padR, y2: H - padB, stroke: C.base, 'stroke-width': 1}));
 }
-function dotWithRing(cx, cy, color, C, hoverHtml) {
-  svg.appendChild(el('circle', {cx, cy, r: 7, fill: C.surf}));
-  svg.appendChild(el('circle', {cx, cy, r: 5, fill: color}));
+function dotWithRing(ctx, cx, cy, color, C, hoverHtml) {
+  ctx.svg.appendChild(el('circle', {cx, cy, r: 7, fill: C.surf}));
+  ctx.svg.appendChild(el('circle', {cx, cy, r: 5, fill: color}));
   const hit = el('circle', {cx, cy, r: 14, fill: 'transparent', style: 'cursor:pointer'});
-  hit.addEventListener('mouseenter', () => tipAt(cx, cy, hoverHtml));
-  hit.addEventListener('mouseleave', hideTip);
-  hit.addEventListener('click', () => tipAt(cx, cy, hoverHtml));
-  svg.appendChild(hit);
+  hit.addEventListener('mouseenter', () => tipAt(ctx, cx, cy, hoverHtml));
+  hit.addEventListener('mouseleave', () => { ctx.tip.style.display = 'none'; });
+  hit.addEventListener('click', () => tipAt(ctx, cx, cy, hoverHtml));
+  ctx.svg.appendChild(hit);
 }
-function emptyChart(C, msg) {
-  const t = el('text', {x: W / 2, y: H / 2, 'text-anchor': 'middle', 'font-size': 15, fill: C.muted});
-  t.textContent = msg; svg.appendChild(t);
+function emptyChart(ctx, C, msg) {
+  const t = el('text', {x: W / 2, y: (H - padB) / 2 + 8, 'text-anchor': 'middle', 'font-size': 14, fill: C.muted});
+  t.textContent = msg; ctx.svg.appendChild(t);
 }
 
 function drawDay(C, a) {
-  chartBase(C);
-  const data = readingsOf(entriesIn(a, a));
-  [0, 6, 12, 18, 24].forEach(h => {
-    const x = padL + h / 24 * plotW;
-    const t = el('text', {x, y: H - padB + 18, 'text-anchor': h === 0 ? 'start' : h === 24 ? 'end' : 'middle', 'font-size': 12, fill: C.sec});
-    t.textContent = `${String(h).padStart(2, '0')}:00`; svg.appendChild(t);
-  });
-  if (!data.length) { emptyChart(C, T().noReadings); return; }
-  const xP = r => padL + (r.t.getHours() * 60 + r.t.getMinutes()) / 1440 * plotW;
-  if (data.length > 1) {
-    const pts = data.map(r => `${xP(r).toFixed(1)},${yPosBase(r.glu).toFixed(1)}`).join(' ');
-    svg.appendChild(el('polyline', {points: pts, fill: 'none', stroke: C.conn, 'stroke-width': 2, 'stroke-linejoin': 'round', 'stroke-linecap': 'round'}));
-  }
-  data.forEach(r => {
-    const cx = xP(r), cy = yPosBase(r.glu);
-    dotWithRing(cx, cy, inRange(r) ? C.good : C.crit, C,
-      `${hhmm(r.t)} · ${timingLabel(r)}<br><b>${r.glu.toFixed(1)} mmol/L</b> ${statusLabel(r)}`);
-    const lb = el('text', {x: cx, y: cy - 14, 'text-anchor': 'middle', 'font-size': 13, 'font-weight': 700, fill: C.sec});
-    lb.textContent = r.glu.toFixed(1); svg.appendChild(lb);
+  PANELS.forEach(p => {
+    const ctx = ctxOf(p);
+    chartBase(ctx, C);
+    [0, 6, 12, 18, 24].forEach(h => {
+      const x = padL + h / 24 * plotW;
+      const t = el('text', {x, y: H - padB + 16, 'text-anchor': h === 0 ? 'start' : h === 24 ? 'end' : 'middle', 'font-size': 11, fill: C.sec});
+      t.textContent = `${String(h).padStart(2, '0')}:00`; ctx.svg.appendChild(t);
+    });
+    const data = readingsFor(p.key, readingsOf(entriesIn(a, a)));
+    if (!data.length) { emptyChart(ctx, C, T().noMeas); return; }
+    const xP = r => padL + (r.t.getHours() * 60 + r.t.getMinutes()) / 1440 * plotW;
+    if (data.length > 1) {
+      const pts = data.map(r => `${xP(r).toFixed(1)},${yPos(ctx, r.glu).toFixed(1)}`).join(' ');
+      ctx.svg.appendChild(el('polyline', {points: pts, fill: 'none', stroke: C.conn, 'stroke-width': 2, 'stroke-linejoin': 'round', 'stroke-linecap': 'round'}));
+    }
+    data.forEach(r => {
+      const cx = xP(r), cy = yPos(ctx, r.glu);
+      dotWithRing(ctx, cx, cy, inRange(r) ? C.good : C.crit, C,
+        `${hhmm(r.t)} · ${timingLabel(r)}<br><b>${r.glu.toFixed(1)} mmol/L</b> ${statusLabel(r)}`);
+      const lb = el('text', {x: cx, y: Math.max(padT + 10, cy - 13), 'text-anchor': 'middle', 'font-size': 13, 'font-weight': 700, fill: C.sec});
+      lb.textContent = r.glu.toFixed(1); ctx.svg.appendChild(lb);
+    });
   });
 }
 
 function drawWeek(C, a, b) {
-  chartBase(C);
-  const data = readingsOf(entriesIn(a, b));
-  for (let i = 0; i < 7; i++) {
-    const d = addDays(a, i);
-    const cx = padL + (i + 0.5) / 7 * plotW;
-    const t = el('text', {x: cx, y: H - padB + 18, 'text-anchor': 'middle', 'font-size': 12, fill: C.sec});
-    t.textContent = T().dows[d.getDay()]; svg.appendChild(t);
-    const dt = el('text', {x: cx, y: H - padB + 31, 'text-anchor': 'middle', 'font-size': 10, fill: C.muted});
-    dt.textContent = `${d.getMonth()+1}/${d.getDate()}`; svg.appendChild(dt);
-  }
-  if (!data.length) { emptyChart(C, T().noReadings); return; }
-  const xP = r => {
-    const idx = Math.floor((startOfDay(r.t) - a) / 86400000);
-    const frac = (r.t.getHours() * 60 + r.t.getMinutes()) / 1440;
-    return padL + (idx + 0.15 + frac * 0.7) / 7 * plotW;
-  };
-  if (data.length > 1) {
-    const pts = data.map(r => `${xP(r).toFixed(1)},${yPosBase(r.glu).toFixed(1)}`).join(' ');
-    svg.appendChild(el('polyline', {points: pts, fill: 'none', stroke: C.conn, 'stroke-width': 2, 'stroke-linejoin': 'round', 'stroke-linecap': 'round'}));
-  }
-  data.forEach(r => {
-    dotWithRing(xP(r), yPosBase(r.glu), inRange(r) ? C.good : C.crit, C,
-      `${T().dateShort(r.t)} ${hhmm(r.t)}<br>${timingLabel(r)} · <b>${r.glu.toFixed(1)} mmol/L</b> ${statusLabel(r)}`);
+  PANELS.forEach(p => {
+    const ctx = ctxOf(p);
+    chartBase(ctx, C);
+    for (let i = 0; i < 7; i++) {
+      const d = addDays(a, i);
+      const cx = padL + (i + 0.5) / 7 * plotW;
+      const t = el('text', {x: cx, y: H - padB + 15, 'text-anchor': 'middle', 'font-size': 11, fill: C.sec});
+      t.textContent = T().dows[d.getDay()]; ctx.svg.appendChild(t);
+      const dt = el('text', {x: cx, y: H - padB + 27, 'text-anchor': 'middle', 'font-size': 9, fill: C.muted});
+      dt.textContent = `${d.getMonth()+1}/${d.getDate()}`; ctx.svg.appendChild(dt);
+    }
+    const data = readingsFor(p.key, readingsOf(entriesIn(a, b)));
+    if (!data.length) { emptyChart(ctx, C, T().noMeas); return; }
+    const xP = r => {
+      const idx = Math.floor((startOfDay(r.t) - a) / 86400000);
+      const frac = (r.t.getHours() * 60 + r.t.getMinutes()) / 1440;
+      return padL + (idx + 0.15 + frac * 0.7) / 7 * plotW;
+    };
+    if (data.length > 1) {
+      const pts = data.map(r => `${xP(r).toFixed(1)},${yPos(ctx, r.glu).toFixed(1)}`).join(' ');
+      ctx.svg.appendChild(el('polyline', {points: pts, fill: 'none', stroke: C.conn, 'stroke-width': 2, 'stroke-linejoin': 'round', 'stroke-linecap': 'round'}));
+    }
+    data.forEach(r => {
+      dotWithRing(ctx, xP(r), yPos(ctx, r.glu), inRange(r) ? C.good : C.crit, C,
+        `${T().dateShort(r.t)} ${hhmm(r.t)}<br>${timingLabel(r)} · <b>${r.glu.toFixed(1)} mmol/L</b> ${statusLabel(r)}`);
+    });
+    const hi = data.reduce((x, y) => (y.glu > x.glu ? y : x));
+    if (!inRange(hi)) {
+      const lb = el('text', {x: Math.min(W - padR - 30, Math.max(padL + 30, xP(hi))), y: Math.max(padT + 10, yPos(ctx, hi.glu) - 12), 'text-anchor': 'middle', 'font-size': 13, 'font-weight': 700, fill: C.sec});
+      lb.textContent = hi.glu.toFixed(1); ctx.svg.appendChild(lb);
+    }
   });
-  const hi = data.reduce((x, y) => (y.glu > x.glu ? y : x));
-  if (!inRange(hi)) {
-    const lb = el('text', {x: Math.min(W - padR - 30, Math.max(padL + 30, xP(hi))), y: Math.max(padT + 12, yPosBase(hi.glu) - 12), 'text-anchor': 'middle', 'font-size': 13, 'font-weight': 700, fill: C.sec});
-    lb.textContent = hi.glu.toFixed(1); svg.appendChild(lb);
-  }
 }
 
 function drawMonth(C, a, b) {
-  chartBase(C);
   const nDays = b.getDate();
-  const daily = [];
-  for (let d = 1; d <= nDays; d++) {
-    const day = new Date(a.getFullYear(), a.getMonth(), d);
-    const rs = readingsOf(entriesIn(day, day));
-    if (rs.length) daily.push({day: d, avg: avg(rs), n: rs.length, highs: rs.filter(r => !inRange(r)).length, date: day});
-  }
-  const xP = d => padL + (d - 0.5) / nDays * plotW;
-  [1, 5, 10, 15, 20, 25, nDays].forEach(d => {
-    const t = el('text', {x: xP(d), y: H - padB + 18, 'text-anchor': 'middle', 'font-size': 12, fill: C.sec});
-    t.textContent = d; svg.appendChild(t);
-  });
-  if (!daily.length) { emptyChart(C, T().noReadings); return; }
-  if (daily.length > 1) {
-    const pts = daily.map(x => `${xP(x.day).toFixed(1)},${yPosBase(x.avg).toFixed(1)}`).join(' ');
-    svg.appendChild(el('polyline', {points: pts, fill: 'none', stroke: C.conn, 'stroke-width': 2, 'stroke-linejoin': 'round', 'stroke-linecap': 'round'}));
-  }
-  daily.forEach(x => {
-    dotWithRing(xP(x.day), yPosBase(x.avg), x.highs ? C.crit : C.good, C,
-      `${T().dateShort(x.date)}<br>${lang === 'zh' ? `${x.n} 次测量 · 平均` : `${x.n} readings · avg`} <b>${x.avg.toFixed(1)}</b><br>${lang === 'zh' ? `偏高 ${x.highs} 次` : `${x.highs} high`}`);
+  PANELS.forEach(p => {
+    const ctx = ctxOf(p);
+    chartBase(ctx, C);
+    const xP = d => padL + (d - 0.5) / nDays * plotW;
+    [1, 5, 10, 15, 20, 25, nDays].forEach(d => {
+      const t = el('text', {x: xP(d), y: H - padB + 16, 'text-anchor': 'middle', 'font-size': 11, fill: C.sec});
+      t.textContent = d; ctx.svg.appendChild(t);
+    });
+    const daily = [];
+    for (let d = 1; d <= nDays; d++) {
+      const day = new Date(a.getFullYear(), a.getMonth(), d);
+      const rs = readingsFor(p.key, readingsOf(entriesIn(day, day)));
+      if (rs.length) daily.push({day: d, avg: avg(rs), n: rs.length, flagged: rs.some(r => !inRange(r)), date: day});
+    }
+    if (!daily.length) { emptyChart(ctx, C, T().noMeas); return; }
+    if (daily.length > 1) {
+      const pts = daily.map(x => `${xP(x.day).toFixed(1)},${yPos(ctx, x.avg).toFixed(1)}`).join(' ');
+      ctx.svg.appendChild(el('polyline', {points: pts, fill: 'none', stroke: C.conn, 'stroke-width': 2, 'stroke-linejoin': 'round', 'stroke-linecap': 'round'}));
+    }
+    daily.forEach(x => {
+      dotWithRing(ctx, xP(x.day), yPos(ctx, x.avg), x.flagged ? C.crit : C.good, C,
+        `${T().dateShort(x.date)}<br>${lang === 'zh' ? `${x.n} 次测量 · 平均` : `${x.n} readings · avg`} <b>${x.avg.toFixed(1)}</b>`);
+    });
   });
 }
 
@@ -790,7 +813,9 @@ function render() {
 
   $('t-chart-h').textContent = view === 'day' ? t.chartHDay : view === 'week' ? t.chartHWeek : t.chartHMonth;
   $('t-chart-note').textContent = view === 'month' ? t.chartNoteMonth : t.chartNote;
-  hideTip();
+  $('ph-fast').textContent = t.panelFast;
+  $('ph-post').textContent = t.panelPost;
+  hideTips();
   if (!$('content').classList.contains('hidden')) {
     const C = colors();
     if (view === 'day') drawDay(C, a); else if (view === 'week') drawWeek(C, a, b); else drawMonth(C, a, b);
