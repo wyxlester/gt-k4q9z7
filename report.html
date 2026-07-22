@@ -162,6 +162,7 @@
   td.num { font-variant-numeric: tabular-nums; font-weight: 600; color: var(--text-primary); }
   tr:last-child td { border-bottom: none; }
   .flag-good { color: var(--good-text); font-weight: 600; }
+  .del-btn { font: inherit; border: none; background: none; color: var(--text-muted); font-size: 16px; padding: 2px 6px; cursor: pointer; }
   .flag-high { color: var(--critical); font-weight: 700; }
   .hidden { display: none; }
 
@@ -305,6 +306,17 @@
 
 </div>
 
+<div class="modal-bg hidden" id="del-bg">
+  <div class="modal">
+    <h3 id="d-title"></h3>
+    <p id="d-text" style="font-weight:700; color:var(--text-primary);"></p>
+    <div class="row">
+      <button class="m-cancel" id="d-cancel" onclick="closeDelete()"></button>
+      <button class="m-confirm" id="d-confirm" onclick="doDelete()"></button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-bg hidden" id="modal-bg">
   <div class="modal">
     <h3 id="m-title"></h3>
@@ -370,6 +382,9 @@ const I18N = {
     mText: '这会永久删除全部记录，无法复原。如果确定要清空，请在下面输入 RESET：',
     mPlaceholder: '输入 RESET',
     mCancel: '取消',
+    dTitle: '删除这条记录？',
+    dConfirm: '删除',
+    dDone: '已删除',
     mConfirm: '清空',
     resetDone: '已清空',
   },
@@ -420,6 +435,9 @@ const I18N = {
     mText: 'This permanently deletes every record and cannot be undone. If you are sure, type RESET below:',
     mPlaceholder: 'Type RESET',
     mCancel: 'Cancel',
+    dTitle: 'Delete this entry?',
+    dConfirm: 'Delete',
+    dDone: 'Deleted',
     mConfirm: 'Erase',
     resetDone: 'All data erased',
   }
@@ -772,17 +790,19 @@ function renderTable(a, b) {
     return;
   }
   $('t-log-h').textContent = T().logH;
-  head.innerHTML = T().logCols.map(c => `<th>${c}</th>`).join('');
+  head.innerHTML = T().logCols.map(c => `<th>${c}</th>`).join('') + '<th></th>';
   const list = entriesIn(a, b);
-  body.innerHTML = list.map(r => {
+  tableList = list;
+  body.innerHTML = list.map((r, i) => {
     const what = mealLabel(r) + (r.foods ? ` · ${r.foods}` : '');
+    const del = `<td><button class="del-btn" onclick="openDelete(${i})" aria-label="delete">✕</button></td>`;
     if (r.glu === null) {
-      return `<tr><td>${T().dateShort(r.t)}</td><td>${hhmm(r.t)}</td><td class="what">${what}</td><td class="num">${T().none}</td><td></td></tr>`;
+      return `<tr><td>${T().dateShort(r.t)}</td><td>${hhmm(r.t)}</td><td class="what">${what}</td><td class="num">${T().none}</td><td></td>${del}</tr>`;
     }
     const ok = inRange(r);
     return `<tr><td>${T().dateShort(r.t)}</td><td>${hhmm(r.t)}</td><td class="what">${what}</td>` +
       `<td class="num">${r.glu.toFixed(1)}</td>` +
-      `<td class="${ok ? 'flag-good' : 'flag-high'}">${statusLabel(r)}</td></tr>`;
+      `<td class="${ok ? 'flag-good' : 'flag-high'}">${statusLabel(r)}</td>${del}</tr>`;
   }).join('');
   if (!list.length) { empty.textContent = T().noRecords; empty.classList.remove('hidden'); }
 }
@@ -842,6 +862,35 @@ function setLang(l) {
   render();
 }
 function setView(v) { view = v; anchor = new Date(); render(); }
+
+// ================= single-entry delete =================
+let tableList = [];
+let delTarget = null;
+function openDelete(i) {
+  const r = tableList[i];
+  if (!r) return;
+  delTarget = r;
+  const t = T();
+  $('d-title').textContent = t.dTitle;
+  $('d-text').textContent = `${t.dateShort(r.t)} ${hhmm(r.t)} · ${mealLabel(r)}` + (r.glu !== null ? ` · ${r.glu.toFixed(1)} mmol/L` : '');
+  $('d-cancel').textContent = t.mCancel;
+  $('d-confirm').textContent = t.dConfirm;
+  $('d-confirm').disabled = false;
+  $('del-bg').classList.remove('hidden');
+}
+function closeDelete() { $('del-bg').classList.add('hidden'); delTarget = null; }
+async function doDelete() {
+  if (!delTarget) return;
+  $('d-confirm').disabled = true;
+  try {
+    await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors',
+      body: new URLSearchParams({ action: 'delete', ts: delTarget.t.toISOString(), meal: delTarget.meal }) });
+  } catch (e) { /* opaque either way */ }
+  await new Promise(r => setTimeout(r, 1500));
+  closeDelete();
+  alertMsg(T().dDone);
+  init();
+}
 
 // ================= reset (guarded) =================
 function openReset() {
